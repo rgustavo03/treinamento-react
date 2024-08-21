@@ -21,6 +21,64 @@ function App() {
     - Email
   */
 
+  //map (mapeamento) -> moficação (um novo array com a mesma quantidade de objetos), 
+  //filter -> filtrar (array de acordo com o filtro), 
+  //find -> filtrar (retorna um objeto)
+  //reduce -> reduzir (apenas um valor)
+  //sort -> ordenação
+
+  const usuarios = [
+    { id: 1, nome: 'joao', idade: 18, pontos: 600 },
+    { id: 2, nome: 'antonio', idade: 10, pontos: 500 },
+    { id: 3, nome: 'pedro', idade: 15, pontos: 300 },
+    { id: 4, nome: 'lucas', idade: 20, pontos: 150 },
+    { id: 5, nome: 'maria', idade: 5, pontos: 100 },
+  ];
+
+  const rankingUsuarios = usuarios.sort((a, b) => b.pontos - a.pontos);
+  console.log('rankingUsuarios =>', rankingUsuarios);
+
+  const rankingUsuariosAdultos = usuarios
+    .filter(u => u.idade >= 18)
+    .sort((a, b) => b.pontos - a.pontos)
+    .map(u => {
+      return {
+        nome: u.nome,
+        pontos: u.pontos,
+        recompensa: u.pontos * 2.5
+      }
+    });
+
+  console.log('rankingUsuariosAdultos =>', rankingUsuariosAdultos);
+
+  const usuariosAdultos = usuarios.filter(usuario => usuario.idade >= 18);
+  console.log('usuariosAdultos =>', usuariosAdultos);
+
+  const usuario3 = usuarios.find(usuario => usuario.id == 3);
+  console.log('usuario3 =>', usuario3);
+  //const, let
+
+  const nomeEquipe = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + ', ' + elementoAtual.nome, '');
+
+  console.log('nomeEquipe', nomeEquipe);
+
+  // let pontuacaoTotal = usuarios
+  //   .reduce(function (valorAnterior, elementoAtual) {
+  //     console.log('valorAnterior: ', valorAnterior)
+  //     console.log('elementoAtual: ', elementoAtual)
+  //     return valorAnterior + elementoAtual.pontos
+  //   }, 0);
+
+  let pontuacaoTotal = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + elementoAtual.pontos, 0);
+
+  // let pontuacaoTotal = 0;
+
+  // for (let index = 0; index < usuarios.length; index++) {
+  //   pontuacaoTotal += usuarios[index].pontos;
+  // }
+
+  console.log('pontuacaoTotal => ', pontuacaoTotal);
+
   //react => reativo (ESTADO)
 
   function inicializar() {
@@ -34,22 +92,22 @@ function App() {
     //tipadas true false
     //false: false, '', null, undefined, 
 
-    if(!nome) {
+    if (!nome) {
       alert('preencha o campo nome');
       return;
     }
 
-    if(!dataNascimento) {
+    if (!dataNascimento) {
       alert('preencha o campo data nascimento');
       return;
     }
 
-    if(!cpf) {
+    if (!cpf) {
       alert('preencha o campo cpf');
       return;
     }
 
-    if(!email) {
+    if (!email) {
       alert('preencha o campo email');
       return;
     }
@@ -71,8 +129,8 @@ function App() {
 
     setListaClientes([...listaClientes, dados]);
   }
-  
-  
+
+
   console.log('RENDERIZOU OS COMPONENTES');
   console.log('listaClientes =>', listaClientes)
 
