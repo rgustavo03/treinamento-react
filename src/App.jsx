@@ -9,6 +9,7 @@ function App() {
   //let nome = '';
   const [listaClientes, setListaClientes] = useState([])
 
+  const [idCliente, setIdCliente] = useState('');
   const [nome, setNome] = useState('');
   const [dataNascimento, setDataNascimento] = useState('')
   const [cpf, setCpf] = useState('');
@@ -26,6 +27,8 @@ function App() {
   //find -> filtrar (retorna um objeto)
   //reduce -> reduzir (apenas um valor)
   //sort -> ordenação
+
+
 
   const usuarios = [
     { id: 1, nome: 'joao', idade: 18, pontos: 600 },
@@ -48,6 +51,13 @@ function App() {
         recompensa: u.pontos * 2.5
       }
     });
+
+
+
+  //pop -> remove o ultimo item do array
+  //push -> adiciona um item ao final do array
+  //shift -> remove o primeiro item do array
+  //unshift -> adiciona um item no inicio do array
 
   console.log('rankingUsuariosAdultos =>', rankingUsuariosAdultos);
 
@@ -82,7 +92,58 @@ function App() {
   //react => reativo (ESTADO)
 
   function inicializar() {
-    setNome('Joao')
+    //setNome('Joao')
+
+    const clientesDefault = [];
+
+    for (let index = 0; index < 10; index++) {
+      clientesDefault.push({
+        id: uuidv4(),
+        cpf: ''.padStart(11, index.toString()),
+        nome: `cliente ${index}`, //template string,
+        email: 'cliente' + index.toString() + '@email.com',
+        dataNascimento: '1900-01-' + index.toString().padStart(2, '0')
+      })
+    }
+
+    setListaClientes(clientesDefault);
+  }
+
+  function deletar(id) {
+    console.log('deletar: ', id);
+
+    const novoArray = listaClientes.filter(c => c.id != id);
+    setListaClientes(novoArray);
+
+    // const novoArray = [];
+    // listaClientes.forEach(element => {
+    //   if(element.id == id)
+    //     return;
+
+    //   novoArray.push(element);
+    // });
+
+    // setListaClientes(novoArray);
+  }
+
+  function editar(id) {
+    console.log('editar: ', id);
+
+    const cliente = listaClientes.find(c => c.id == id);
+
+    setIdCliente(cliente.id);
+    setNome(cliente.nome);
+    setDataNascimento(cliente.dataNascimento);
+    setCpf(cliente.cpf);
+    setEmail(cliente.email);
+  }
+
+  function cancelar() {
+    setNome('');
+    setDataNascimento('');
+    setCpf('');
+    setEmail('');
+    setIdCliente('');
   }
 
   function salvar() {
@@ -96,6 +157,22 @@ function App() {
       alert('preencha o campo nome');
       return;
     }
+
+    const usuarioComMesmoNome = listaClientes.filter(c => c.nome == nome && c.id != idCliente);
+
+    if (usuarioComMesmoNome.length > 0) {
+      alert('já existe outro cliente com o mesmo nome');
+      return;
+    }
+
+    // for (let index = 0; index < listaClientes.length; index++) {
+    //   const element = listaClientes[index];
+
+    //   if(element.nome == nome) {
+    //     alert('já existe outro cliente com o mesmo nome');
+    //     return;
+    //   }
+    // }
 
     if (!dataNascimento) {
       alert('preencha o campo data nascimento');
@@ -113,7 +190,7 @@ function App() {
     }
 
     const dados = {
-      id: uuidv4(),
+      id: idCliente ? idCliente : uuidv4(),
       nome,
       dataNascimento,
       cpf,
@@ -124,10 +201,17 @@ function App() {
     setDataNascimento('');
     setCpf('');
     setEmail('');
+    setIdCliente('');
 
     console.log('listaClientes =>', listaClientes)
 
-    setListaClientes([...listaClientes, dados]);
+    if (idCliente) {
+      let novaLista = listaClientes.filter(c => c.id != idCliente);
+
+      setListaClientes([...novaLista, dados]);
+    } else {
+      setListaClientes([...listaClientes, dados]);
+    }
   }
 
 
@@ -137,7 +221,14 @@ function App() {
   return (
     <>
       <h1>Cadastro de Cliente</h1>
-      <Button onClick={inicializar} nome="Incializar" />
+      <Button 
+          onClick={inicializar} 
+          nome="Incializar"
+          disabled={listaClientes.length > 0} />
+
+      {idCliente && <div className='alert alert-warning my-4'>
+        Id Cliente selecionado: {idCliente}
+      </div>}
 
       <Input
         Nome="Nome"
@@ -172,6 +263,10 @@ function App() {
         <i className="fa-solid fa-floppy-disk"></i>
       </Button>
 
+      {idCliente && <Button onClick={cancelar} nome="Cancelar" tipoBotao="btn-danger">
+        <i className="fa-solid fa-xmark"></i>
+      </Button>}
+
 
       <Table>
         <thead>
@@ -180,6 +275,7 @@ function App() {
             <th>Data Nascimento</th>
             <th>Cpf</th>
             <th>Email</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -190,6 +286,25 @@ function App() {
                 <td>{c.dataNascimento}</td>
                 <td>{c.cpf}</td>
                 <td>{c.email}</td>
+                <td>
+                  <Button
+                    nome="Editar"
+                    tipoBotao="btn-warning"
+                    tamanho="btn-sm"
+                    onClick={() => editar(c.id)}
+                    disabled={idCliente ? true : false}>
+                    <i className="fa-solid fa-pencil"></i>
+                  </Button>
+
+                  <Button
+                    nome="Deletar"
+                    tipoBotao="btn-danger"
+                    tamanho="btn-sm"
+                    onClick={() => deletar(c.id)}
+                    disabled={idCliente ? true : false}>
+                    <i className="fa-regular fa-trash-can"></i>
+                  </Button>
+                </td>
               </tr>
             )
           })}
