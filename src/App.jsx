@@ -21,6 +21,8 @@ function App() {
   const [tipoCliente, setTipoCliente] = useState('')
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmacaoSenha, setConfirmacaoSenha] = useState('');
 
 
   useEffect(() => {
@@ -192,7 +194,7 @@ function App() {
     //   }
     // }
 
-    if (!dataNascimento) {
+    if (tipoCliente == 'PF' && !dataNascimento) {
       alert('preencha o campo data nascimento');
       return;
     }
@@ -207,6 +209,22 @@ function App() {
       return;
     }
 
+    if (!senha) {
+      alert('preencha o campo senha');
+      return;
+    }
+    
+    if (!confirmacaoSenha) {
+      alert('preencha o campo confirmação senha');
+      return;
+    }
+
+    if (senha != confirmacaoSenha) {
+      alert('senha não confere com a confirmação');
+      return;
+    }
+
+
     const dados = {
       id: idCliente ? idCliente : uuidv4(),
       nome,
@@ -215,11 +233,14 @@ function App() {
       email
     };
 
+    setTipoCliente('');
     setNome('');
     setDataNascimento('');
     setCpf('');
     setEmail('');
     setIdCliente('');
+    setSenha('');
+    setConfirmacaoSenha('');
 
     console.log('listaClientes =>', listaClientes)
 
@@ -292,7 +313,6 @@ function App() {
 
                 {tipoCliente == "PF" ? <Input
                   Nome="CPF"
-                  type="number"
                   Id="cpf"
                   placeholder="___.___.___-__"
                   value={cpf}
@@ -311,6 +331,27 @@ function App() {
                   placeholder="exemplo@email.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)} />
+
+                <Input
+                  Nome="Senha"
+                  Id="senha"
+                  type="password"
+                  placeholder="digite sua senha"
+                  value={senha}
+                  onChange={e => setSenha(e.target.value)} />
+
+                <Input
+                  Nome="Confirmacao Senha"
+                  Id="confirmacao-senha"
+                  type="password"
+                  placeholder="digite a confirmação de senha"
+                  value={confirmacaoSenha}
+                  onChange={e => setConfirmacaoSenha(e.target.value)} />
+
+                {senha &&
+                  (senha == confirmacaoSenha ?
+                  <div className='text-success'>Senha igual</div> :
+                  <div className='text-danger'>Senha diferente</div>)}
 
               </>}
               <hr />
