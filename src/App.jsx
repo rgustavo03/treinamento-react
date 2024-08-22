@@ -1,19 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Input from './componentes/input';
 import Button from './componentes/button';
 import Table from './componentes/table';
+import Select from './componentes/select'
 import { v4 as uuidv4 } from 'uuid';
 
 function App() {
+
+  const tiposCliente = [
+    { label: 'Pessoa Física', value: 'PF' },
+    { label: 'Pessoa Jurídica', value: 'PJ' }
+  ];
 
   //let nome = '';
   const [listaClientes, setListaClientes] = useState([])
 
   const [idCliente, setIdCliente] = useState('');
   const [nome, setNome] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('')
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [tipoCliente, setTipoCliente] = useState('')
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
+
+
+  useEffect(() => {
+    //console.log('INICIOU')
+    inicializar();
+  }, [])
+
+  // useEffect(() => {
+
+  // }, [])
 
   /* 
     - Nome
@@ -30,27 +47,27 @@ function App() {
 
 
 
-  const usuarios = [
-    { id: 1, nome: 'joao', idade: 18, pontos: 600 },
-    { id: 2, nome: 'antonio', idade: 10, pontos: 500 },
-    { id: 3, nome: 'pedro', idade: 15, pontos: 300 },
-    { id: 4, nome: 'lucas', idade: 20, pontos: 150 },
-    { id: 5, nome: 'maria', idade: 5, pontos: 100 },
-  ];
+  // const usuarios = [
+  //   { id: 1, nome: 'joao', idade: 18, pontos: 600 },
+  //   { id: 2, nome: 'antonio', idade: 10, pontos: 500 },
+  //   { id: 3, nome: 'pedro', idade: 15, pontos: 300 },
+  //   { id: 4, nome: 'lucas', idade: 20, pontos: 150 },
+  //   { id: 5, nome: 'maria', idade: 5, pontos: 100 },
+  // ];
 
-  const rankingUsuarios = usuarios.sort((a, b) => b.pontos - a.pontos);
-  console.log('rankingUsuarios =>', rankingUsuarios);
+  // const rankingUsuarios = usuarios.sort((a, b) => b.pontos - a.pontos);
+  // console.log('rankingUsuarios =>', rankingUsuarios);
 
-  const rankingUsuariosAdultos = usuarios
-    .filter(u => u.idade >= 18)
-    .sort((a, b) => b.pontos - a.pontos)
-    .map(u => {
-      return {
-        nome: u.nome,
-        pontos: u.pontos,
-        recompensa: u.pontos * 2.5
-      }
-    });
+  // const rankingUsuariosAdultos = usuarios
+  //   .filter(u => u.idade >= 18)
+  //   .sort((a, b) => b.pontos - a.pontos)
+  //   .map(u => {
+  //     return {
+  //       nome: u.nome,
+  //       pontos: u.pontos,
+  //       recompensa: u.pontos * 2.5
+  //     }
+  //   });
 
 
 
@@ -59,18 +76,18 @@ function App() {
   //shift -> remove o primeiro item do array
   //unshift -> adiciona um item no inicio do array
 
-  console.log('rankingUsuariosAdultos =>', rankingUsuariosAdultos);
+  // console.log('rankingUsuariosAdultos =>', rankingUsuariosAdultos);
 
-  const usuariosAdultos = usuarios.filter(usuario => usuario.idade >= 18);
-  console.log('usuariosAdultos =>', usuariosAdultos);
+  // const usuariosAdultos = usuarios.filter(usuario => usuario.idade >= 18);
+  // console.log('usuariosAdultos =>', usuariosAdultos);
 
-  const usuario3 = usuarios.find(usuario => usuario.id == 3);
-  console.log('usuario3 =>', usuario3);
-  //const, let
+  // const usuario3 = usuarios.find(usuario => usuario.id == 3);
+  // console.log('usuario3 =>', usuario3);
+  // //const, let
 
-  const nomeEquipe = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + ', ' + elementoAtual.nome, '');
+  // const nomeEquipe = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + ', ' + elementoAtual.nome, '');
 
-  console.log('nomeEquipe', nomeEquipe);
+  // console.log('nomeEquipe', nomeEquipe);
 
   // let pontuacaoTotal = usuarios
   //   .reduce(function (valorAnterior, elementoAtual) {
@@ -79,7 +96,7 @@ function App() {
   //     return valorAnterior + elementoAtual.pontos
   //   }, 0);
 
-  let pontuacaoTotal = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + elementoAtual.pontos, 0);
+  //let pontuacaoTotal = usuarios.reduce((valorAnterior, elementoAtual) => valorAnterior + elementoAtual.pontos, 0);
 
   // let pontuacaoTotal = 0;
 
@@ -87,7 +104,7 @@ function App() {
   //   pontuacaoTotal += usuarios[index].pontos;
   // }
 
-  console.log('pontuacaoTotal => ', pontuacaoTotal);
+  //console.log('pontuacaoTotal => ', pontuacaoTotal);
 
   //react => reativo (ESTADO)
 
@@ -107,6 +124,7 @@ function App() {
     }
 
     setListaClientes(clientesDefault);
+    console.log('Carregou os clientes default');
   }
 
   function deletar(id) {
@@ -216,8 +234,10 @@ function App() {
   }
 
 
-  console.log('RENDERIZOU OS COMPONENTES');
-  console.log('listaClientes =>', listaClientes)
+  // console.log('RENDERIZOU OS COMPONENTES');
+  // console.log('listaClientes =>', listaClientes)
+
+  console.log(tipoCliente)
 
   return (
     <div className='bg-body-tertiary'>
@@ -225,17 +245,17 @@ function App() {
 
         <div className="d-flex align-items-center p-3 my-3 text-white bg-primary rounded shadow-sm" >
 
-          <i class="fa-solid fa-user-group me-3 fa-2xl"></i>
+          <i className="fa-solid fa-user-group me-3 fa-2xl"></i>
           <div className="lh-1">
             <h1 className="h6 mb-0 text-white lh-1">Cadastro de Clientes</h1>
             <small>{listaClientes.length} registros</small>
           </div>
         </div>
 
-        {listaClientes.length == 0 && <Button
+        {/* {listaClientes.length == 0 && <Button
           onClick={inicializar}
           nome="Incializar"
-          disabled={listaClientes.length > 0} />}
+          disabled={listaClientes.length > 0} />} */}
 
         {idCliente && <div className='alert alert-warning my-4'>
           Id Cliente selecionado: {idCliente}
@@ -245,39 +265,54 @@ function App() {
         <div className='row'>
 
           <div className='col-lg-4'>
-            <div class="my-3 p-3 bg-body rounded shadow-sm">
-              <h6 class="border-bottom pb-2 mb-2">Dados Cliente</h6>
+            <div className="my-3 p-3 bg-body rounded shadow-sm">
+              <h6 className="border-bottom pb-2 mb-2">Dados Cliente</h6>
 
-              <Input
-                Nome="Nome"
-                Id="nome"
-                placeholder="Informe seu nome"
-                value={nome}
-                onChange={e => setNome(e.target.value)} />
+              <Select
+                Nome="Tipo Cliente"
+                Id="tipo-cliente"
+                Opcoes={tiposCliente}
+                value={tipoCliente}
+                onChange={e => setTipoCliente(e.target.value)} />
 
-              <Input
-                Nome="Data de Nascimento"
-                Id="data-nascimento"
-                type="date"
-                value={dataNascimento}
-                onChange={e => setDataNascimento(e.target.value)} />
+              {tipoCliente && <>
+                <Input
+                  Nome={tipoCliente == "PF" ? "Nome" : "Razão Social"}
+                  Id="nome"
+                  placeholder={tipoCliente == "PF" ? "Informe seu nome" : "Informe o nome da empresa"}
+                  value={nome}
+                  onChange={e => setNome(e.target.value)} />
 
-              <Input
-                Nome="CPF"
-                Id="cpf"
-                placeholder="___.___.___-__"
-                value={cpf}
-                onChange={e => setCpf(e.target.value)} />
+                {tipoCliente == "PF" && <Input
+                  Nome="Data de Nascimento"
+                  Id="data-nascimento"
+                  type="date"
+                  value={dataNascimento}
+                  onChange={e => setDataNascimento(e.target.value)} />}
 
-              <Input
-                Nome="Email"
-                Id="email"
-                type="email"
-                placeholder="exemplo@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)} />
+                {tipoCliente == "PF" ? <Input
+                  Nome="CPF"
+                  type="number"
+                  Id="cpf"
+                  placeholder="___.___.___-__"
+                  value={cpf}
+                  onChange={e => setCpf(e.target.value)} /> :
+                  <Input
+                    Nome="CNPJ"
+                    Id="cnpj"
+                    placeholder="__.___.___/____-__"
+                    value={cpf}
+                    onChange={e => setCpf(e.target.value)} />}
 
+                <Input
+                  Nome="Email"
+                  Id="email"
+                  type="email"
+                  placeholder="exemplo@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)} />
 
+              </>}
               <hr />
 
               <Button onClick={salvar} nome="Salvar">
@@ -292,7 +327,7 @@ function App() {
           </div>
 
           <div className='col-lg-8'>
-            <div class="my-3 p-3 bg-body rounded shadow-sm"
+            <div className="my-3 p-3 bg-body rounded shadow-sm"
             // style={{maxHeight: '400px', overflowX: 'hidden', overflowY: 'scroll'}}
             >
               <Table>
