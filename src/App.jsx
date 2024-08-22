@@ -220,99 +220,128 @@ function App() {
   console.log('listaClientes =>', listaClientes)
 
   return (
-    <>
-      <h1>Cadastro de Cliente</h1>
-      {listaClientes.length == 0 && <Button 
-          onClick={inicializar} 
+    <div className='bg-body-tertiary'>
+      <div className='container'>
+
+        <div className="d-flex align-items-center p-3 my-3 text-white bg-primary rounded shadow-sm">
+
+          <i class="fa-solid fa-user-group me-3 fa-2xl"></i>
+          <div className="lh-1">
+            <h1 className="h6 mb-0 text-white lh-1">Cadastro de Clientes</h1>
+            <small>{listaClientes.length} registros</small>
+          </div>
+        </div>
+
+        {listaClientes.length == 0 && <Button
+          onClick={inicializar}
           nome="Incializar"
           disabled={listaClientes.length > 0} />}
 
-      {idCliente && <div className='alert alert-warning my-4'>
-        Id Cliente selecionado: {idCliente}
-      </div>}
-
-      <Input
-        Nome="Nome"
-        Id="nome"
-        placeholder="Informe seu nome"
-        value={nome}
-        onChange={e => setNome(e.target.value)} />
-
-      <Input
-        Nome="Data de Nascimento"
-        Id="data-nascimento"
-        type="date"
-        value={dataNascimento}
-        onChange={e => setDataNascimento(e.target.value)} />
-
-      <Input
-        Nome="CPF"
-        Id="cpf"
-        placeholder="___.___.___-__"
-        value={cpf}
-        onChange={e => setCpf(e.target.value)} />
-
-      <Input
-        Nome="Email"
-        Id="email"
-        type="email"
-        placeholder="exemplo@email.com"
-        value={email}
-        onChange={e => setEmail(e.target.value)} />
-
-      <Button onClick={salvar} nome="Salvar">
-        <i className="fa-solid fa-floppy-disk"></i>
-      </Button>
-
-      {idCliente && <Button onClick={cancelar} nome="Cancelar" tipoBotao="btn-danger">
-        <i className="fa-solid fa-xmark"></i>
-      </Button>}
+        {idCliente && <div className='alert alert-warning my-4'>
+          Id Cliente selecionado: {idCliente}
+        </div>}
 
 
-      <Table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Data Nascimento</th>
-            <th>Cpf</th>
-            <th>Email</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {listaClientes.map(c => {
-            return (
-              <tr key={c.id}>
-                <td>{c.nome}</td>
-                <td>{c.dataNascimento}</td>
-                <td>{c.cpf}</td>
-                <td>{c.email}</td>
-                <td>
-                  <Button
-                    nome="Editar"
-                    tipoBotao="btn-warning"
-                    tamanho="btn-sm"
-                    onClick={() => editar(c.id)}
-                    disabled={idCliente ? true : false}>
-                    <i className="fa-solid fa-pencil"></i>
-                  </Button>
+        <div className='row'>
 
-                  <Button
-                    nome="Deletar"
-                    tipoBotao="btn-danger"
-                    tamanho="btn-sm"
-                    onClick={() => deletar(c.id)}
-                    disabled={idCliente ? true : false}>
-                    <i className="fa-regular fa-trash-can"></i>
-                  </Button>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </Table>
+          <div className='col-lg-5'>
+            <div class="my-3 p-3 bg-body rounded shadow-sm">
+              <h6 class="border-bottom pb-2 mb-2">Dados Cliente</h6>
 
-    </>
+              <Input
+                Nome="Nome"
+                Id="nome"
+                placeholder="Informe seu nome"
+                value={nome}
+                onChange={e => setNome(e.target.value)} />
+
+              <Input
+                Nome="Data de Nascimento"
+                Id="data-nascimento"
+                type="date"
+                value={dataNascimento}
+                onChange={e => setDataNascimento(e.target.value)} />
+
+              <Input
+                Nome="CPF"
+                Id="cpf"
+                placeholder="___.___.___-__"
+                value={cpf}
+                onChange={e => setCpf(e.target.value)} />
+
+              <Input
+                Nome="Email"
+                Id="email"
+                type="email"
+                placeholder="exemplo@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)} />
+
+
+              <hr />
+
+              <Button onClick={salvar} nome="Salvar">
+                <i className="fa-solid fa-floppy-disk"></i>
+              </Button>
+
+              {idCliente && <Button onClick={cancelar} nome="Cancelar" tipoBotao="btn-danger">
+                <i className="fa-solid fa-xmark"></i>
+              </Button>}
+
+            </div>
+          </div>
+
+          <div className='col-lg-7'>
+            <div class="my-3 p-3 bg-body rounded shadow-sm" 
+            // style={{maxHeight: '400px', overflowX: 'hidden', overflowY: 'scroll'}}
+            >
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Data Nascimento</th>
+                    <th>Cpf</th>
+                    <th>Email</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listaClientes.map(c => {
+                    return (
+                      <tr key={c.id}>
+                        <td>{c.nome}</td>
+                        <td>{c.dataNascimento}</td>
+                        <td>{c.cpf}</td>
+                        <td>{c.email}</td>
+                        <td>
+                          <Button
+                            nome="Editar"
+                            tipoBotao="btn-warning"
+                            tamanho="btn-sm"
+                            onClick={() => editar(c.id)}
+                            disabled={idCliente ? true : false}>
+                            <i className="fa-solid fa-pencil"></i>
+                          </Button>
+
+                          <Button
+                            nome="Deletar"
+                            tipoBotao="btn-danger"
+                            tamanho="btn-sm"
+                            onClick={() => deletar(c.id)}
+                            disabled={idCliente ? true : false}>
+                            <i className="fa-regular fa-trash-can"></i>
+                          </Button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
