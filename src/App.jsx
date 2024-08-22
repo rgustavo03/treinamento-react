@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { faker } from '@faker-js/faker';
 
 import Input from './componentes/input';
 import Button from './componentes/button';
@@ -9,6 +8,8 @@ import Select from './componentes/select'
 import InputMask from './componentes/inputMask';
 import Header from './componentes/header';
 import EmptyState from './componentes/emptyState';
+
+import { salvarCliente, inicializar } from './service/cliente'
 
 function App() {
 
@@ -37,7 +38,9 @@ function App() {
 
 
   useEffect(() => {
-    inicializar();
+    const listaStorage = inicializar();
+    setListaClientes(listaStorage);
+    setListaClientesFiltrada(listaStorage);
   }, [])
 
   useEffect(() => {
@@ -63,37 +66,6 @@ function App() {
   useEffect(() => {
     setCpf('');
   }, [tipoCliente]);
-
-  function inicializar() {
-    const clientesStorage = localStorage.getItem('listaCliente');
-
-    const listaClientesStorage = clientesStorage ? JSON.parse(clientesStorage) : [];
-
-    if (!listaClientesStorage || listaClientesStorage.length == 0) {
-      const clientesDefault = [];
-
-      for (let index = 0; index < 10; index++) {
-        clientesDefault.push({
-          id: uuidv4(),
-          cpf: index % 2 == 0 ? ''.padStart(11, '1') : ''.padStart(14, '2'),
-          nome: faker.person.fullName(),
-          email: faker.internet.email(),
-          dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0'),
-          tipoCliente: index % 2 == 0 ? 'PF' : 'PJ'
-        })
-      }
-
-      localStorage.setItem('listaCliente', JSON.stringify(clientesDefault));
-
-      setListaClientes(clientesDefault);
-      setListaClientesFiltrada(clientesDefault);
-      console.log('Carregou os clientes default');
-    } else {
-      setListaClientes(listaClientesStorage);
-      setListaClientesFiltrada(listaClientesStorage);
-      console.log('Carregou os clientes default -STORAGE');
-    }
-  }
 
   function deletar(id) {
     console.log('deletar: ', id);
@@ -129,81 +101,41 @@ function App() {
   }
 
   function salvar() {
-    if (!nome) {
-      alert('preencha o campo nome');
-      return;
-    }
+    try {
+      const dados = {
+        id: idCliente ? idCliente : uuidv4(),
+        nome,
+        dataNascimento,
+        cpf,
+        email,
+        tipoCliente,
+        senha,
+        confirmacaoSenha
+      };
+      
+      salvarCliente(dados);
 
-    const usuarioComMesmoNome = listaClientes.filter(c => c.nome == nome && c.id != idCliente);
-
-    if (usuarioComMesmoNome.length > 0) {
-      alert('já existe outro cliente com o mesmo nome');
-      return;
-    }
-
-    if (tipoCliente == 'PF' && !dataNascimento) {
-      alert('preencha o campo data nascimento');
-      return;
-    }
-
-    if (!cpf) {
-      alert('preencha o campo cpf');
-      return;
-    }
-
-    if (!email) {
-      alert('preencha o campo email');
-      return;
-    }
-
-    if (!senha) {
-      alert('preencha o campo senha');
-      return;
-    }
-
-    if (!confirmacaoSenha) {
-      alert('preencha o campo confirmação senha');
-      return;
-    }
-
-    if (senha != confirmacaoSenha) {
-      alert('senha não confere com a confirmação');
-      return;
-    }
+      setTipoCliente('');
+      setNome('');
+      setDataNascimento('');
+      setCpf('');
+      setEmail('');
+      setIdCliente('');
+      setSenha('');
+      setConfirmacaoSenha('');
 
 
-    const dados = {
-      id: idCliente ? idCliente : uuidv4(),
-      nome,
-      dataNascimento,
-      cpf,
-      email,
-      tipoCliente,
-      senha,
-      confirmacaoSenha
-    };
+      if (idCliente) {
+        let novaLista = listaClientes.filter(c => c.id != idCliente);
 
-    setTipoCliente('');
-    setNome('');
-    setDataNascimento('');
-    setCpf('');
-    setEmail('');
-    setIdCliente('');
-    setSenha('');
-    setConfirmacaoSenha('');
-
-    console.log('listaClientes =>', listaClientes)
-
-    if (idCliente) {
-      let novaLista = listaClientes.filter(c => c.id != idCliente);
-
-      setListaClientes([...novaLista, dados]);
-    } else {
-      setListaClientes([...listaClientes, dados]);
+        setListaClientes([...novaLista, dados]);
+      } else {
+        setListaClientes([...listaClientes, dados]);
+      }
+    } catch (error) {
+      alert(error.message);
     }
   }
-
-  console.log(tipoCliente)
 
   return (
     <div className='bg-body-tertiary'>
