@@ -4,6 +4,7 @@ import Button from './componentes/button';
 import Table from './componentes/table';
 import Select from './componentes/select'
 import { v4 as uuidv4 } from 'uuid';
+import { faker } from '@faker-js/faker';
 
 function App() {
 
@@ -13,8 +14,14 @@ function App() {
   ];
 
   //let nome = '';
-  const [listaClientes, setListaClientes] = useState([])
+  const [listaClientes, setListaClientes] = useState([]);
+  const [listaClientesFiltrada, setListaClientesFiltrada] = useState([]);
 
+  //FILTROS
+  const [filtro, setFiltro] = useState('');
+  const [filtroDocumento, setFiltroDocumento] = useState('');
+
+  //FORM
   const [idCliente, setIdCliente] = useState('');
   const [nome, setNome] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
@@ -30,9 +37,28 @@ function App() {
     inicializar();
   }, [])
 
-  // useEffect(() => {
+  useEffect(() => {
+    let listaFiltrada = listaClientes;
 
-  // }, [])
+    if (filtro) {
+      listaFiltrada = listaFiltrada.filter(x =>
+        x.nome.toUpperCase().includes(filtro.toUpperCase()) ||
+        x.email.toUpperCase().includes(filtro.toUpperCase()));
+    }
+
+    if (filtroDocumento) {
+      listaFiltrada = listaFiltrada.filter(x =>
+        x.cpf.toUpperCase().includes(filtroDocumento.toUpperCase()));
+    }
+    setListaClientesFiltrada(listaFiltrada);
+  }, [filtro, listaClientes, filtroDocumento]);
+
+  // useEffect(() => {
+  //   const listaFiltrada = listaClientes
+  //     .filter(x =>
+  //       x.cpf.toUpperCase().includes(filtroDocumento.toUpperCase()));
+  //   setListaClientesFiltrada(listaFiltrada);
+  // }, [filtroDocumento, listaClientes ]);
 
   /* 
     - Nome
@@ -116,16 +142,26 @@ function App() {
     const clientesDefault = [];
 
     for (let index = 0; index < 10; index++) {
+      // clientesDefault.push({
+      //   id: uuidv4(),
+      //   cpf: ''.padStart(11, index.toString()),
+      //   nome: `cliente ${index}`, //template string,
+      //   email: 'cliente' + index.toString() + '@email.com',
+      //   dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0')
+      // })
+
       clientesDefault.push({
         id: uuidv4(),
-        cpf: ''.padStart(11, index.toString()),
-        nome: `cliente ${index}`, //template string,
-        email: 'cliente' + index.toString() + '@email.com',
-        dataNascimento: '1900-01-' + index.toString().padStart(2, '0')
+        //cpf: ''.padStart(11, index.toString()),
+        cpf: ''.padStart(11, '1'),
+        nome: faker.person.fullName(),
+        email: faker.internet.email(),
+        dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0')
       })
     }
 
     setListaClientes(clientesDefault);
+    setListaClientesFiltrada(clientesDefault);
     console.log('Carregou os clientes default');
   }
 
@@ -213,7 +249,7 @@ function App() {
       alert('preencha o campo senha');
       return;
     }
-    
+
     if (!confirmacaoSenha) {
       alert('preencha o campo confirmação senha');
       return;
@@ -350,8 +386,8 @@ function App() {
 
                 {senha &&
                   (senha == confirmacaoSenha ?
-                  <div className='text-success'>Senha igual</div> :
-                  <div className='text-danger'>Senha diferente</div>)}
+                    <div className='text-success'>Senha igual</div> :
+                    <div className='text-danger'>Senha diferente</div>)}
 
               </>}
               <hr />
@@ -371,6 +407,27 @@ function App() {
             <div className="my-3 p-3 bg-body rounded shadow-sm"
             // style={{maxHeight: '400px', overflowX: 'hidden', overflowY: 'scroll'}}
             >
+              <div className='row'>
+                <div className='col-7'>
+                  <Input
+                    Nome="Filtro (Nome, Email)"
+                    Id="filtro"
+                    placeholder="Digite o nome do cliente"
+                    value={filtro}
+                    onChange={e => setFiltro(e.target.value)} />
+
+                </div>
+                <div className='col-5'>
+                  <Input
+                    Nome="Filtro Documento"
+                    Id="filtro-documento"
+                    placeholder="Digite o documento do cliente"
+                    value={filtroDocumento}
+                    onChange={e => setFiltroDocumento(e.target.value)} />
+
+                </div>
+              </div>
+
               <Table>
                 <thead>
                   <tr>
@@ -382,7 +439,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {listaClientes.map(c => {
+                  {listaClientesFiltrada.map(c => {
                     return (
                       <tr key={c.id}>
                         <td>{c.nome}</td>
