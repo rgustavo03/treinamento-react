@@ -153,10 +153,11 @@ function App() {
       clientesDefault.push({
         id: uuidv4(),
         //cpf: ''.padStart(11, index.toString()),
-        cpf: ''.padStart(11, '1'),
+        cpf: index % 2 == 0 ? ''.padStart(11, '1') : ''.padStart(14, '2'),
         nome: faker.person.fullName(),
         email: faker.internet.email(),
-        dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0')
+        dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0'),
+        tipoCliente: index % 2 == 0 ? 'PF' : 'PJ'
       })
     }
 
@@ -192,6 +193,9 @@ function App() {
     setDataNascimento(cliente.dataNascimento);
     setCpf(cliente.cpf);
     setEmail(cliente.email);
+    setTipoCliente(cliente.tipoCliente);
+    setSenha(cliente.senha);
+    setConfirmacaoSenha(cliente.confirmacaoSenha);
   }
 
   function cancelar() {
@@ -200,6 +204,9 @@ function App() {
     setCpf('');
     setEmail('');
     setIdCliente('');
+    setSenha('');
+    setConfirmacaoSenha('');
+    setTipoCliente('');
   }
 
   function salvar() {
@@ -266,7 +273,10 @@ function App() {
       nome,
       dataNascimento,
       cpf,
-      email
+      email,
+      tipoCliente,
+      senha,
+      confirmacaoSenha
     };
 
     setTipoCliente('');
@@ -428,7 +438,7 @@ function App() {
                 </div>
               </div>
 
-              <Table>
+              {listaClientesFiltrada.length > 0 && <Table>
                 <thead>
                   <tr>
                     <th>Nome</th>
@@ -469,7 +479,11 @@ function App() {
                     )
                   })}
                 </tbody>
-              </Table>
+              </Table>}
+
+              {listaClientesFiltrada.length == 0 && <div>
+                Nenhum cliente 
+                </div>}
             </div>
           </div>
         </div>
