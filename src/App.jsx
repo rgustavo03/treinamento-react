@@ -223,7 +223,7 @@ function App() {
     <div className='bg-body-tertiary'>
       <div className='container'>
 
-        <div className="d-flex align-items-center p-3 my-3 text-white bg-primary rounded shadow-sm">
+        <div className="d-flex align-items-center p-3 my-3 text-white bg-primary rounded shadow-sm" >
 
           <i class="fa-solid fa-user-group me-3 fa-2xl"></i>
           <div className="lh-1">
@@ -244,7 +244,7 @@ function App() {
 
         <div className='row'>
 
-          <div className='col-lg-5'>
+          <div className='col-lg-4'>
             <div class="my-3 p-3 bg-body rounded shadow-sm">
               <h6 class="border-bottom pb-2 mb-2">Dados Cliente</h6>
 
@@ -291,8 +291,8 @@ function App() {
             </div>
           </div>
 
-          <div className='col-lg-7'>
-            <div class="my-3 p-3 bg-body rounded shadow-sm" 
+          <div className='col-lg-8'>
+            <div class="my-3 p-3 bg-body rounded shadow-sm"
             // style={{maxHeight: '400px', overflowX: 'hidden', overflowY: 'scroll'}}
             >
               <Table>
@@ -340,6 +340,23 @@ function App() {
             </div>
           </div>
         </div>
+
+
+        {/* <div className='row' style={{ height: '50px' }}>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-primary' style={{ height: '50px' }}>1</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-secondary' style={{ height: '50px' }}>2</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-success' style={{ height: '50px' }}>3</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-danger' style={{ height: '50px' }}>4</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-warning' style={{ height: '50px' }}>5</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-info' style={{ height: '50px' }}>6</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-light' style={{ height: '50px' }}>7</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-dark' style={{ height: '50px' }}>8</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-primary' style={{ height: '50px' }}>9</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-secondary' style={{ height: '50px' }}>10</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-danger' style={{ height: '50px' }}>11</div>
+          <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 col-sm-5 bg-warning' style={{ height: '50px' }}>12</div>
+        </div> */}
+
       </div>
     </div>
   )
