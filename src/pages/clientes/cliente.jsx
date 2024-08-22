@@ -9,6 +9,7 @@ import InputMask from '../../componentes/inputMask';
 import Header from '../../componentes/header';
 import EmptyState from '../../componentes/emptyState';
 
+import TableCliente from './table';
 import { salvarCliente, inicializar } from '../../service/cliente'
 
 function Cliente() {
@@ -262,48 +263,10 @@ function Cliente() {
                 </div>
               </div>
 
-              {listaClientesFiltrada.length > 0 && <Table>
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Data Nascimento</th>
-                    <th>Cpf</th>
-                    <th>Email</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {listaClientesFiltrada.map(c => {
-                    return (
-                      <tr key={c.id}>
-                        <td>{c.nome}</td>
-                        <td>{c.dataNascimento}</td>
-                        <td>{c.cpf}</td>
-                        <td>{c.email}</td>
-                        <td>
-                          <Button
-                            nome="Editar"
-                            tipoBotao="btn-warning"
-                            tamanho="btn-sm"
-                            onClick={() => editar(c.id)}
-                            disabled={idCliente ? true : false}>
-                            <i className="fa-solid fa-pencil"></i>
-                          </Button>
-
-                          <Button
-                            nome="Deletar"
-                            tipoBotao="btn-danger"
-                            tamanho="btn-sm"
-                            onClick={() => deletar(c.id)}
-                            disabled={idCliente ? true : false}>
-                            <i className="fa-regular fa-trash-can"></i>
-                          </Button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </Table>}
+              {listaClientesFiltrada.length > 0 && 
+                <TableCliente 
+                  lista={listaClientesFiltrada} 
+                  idCliente={idCliente} />}
 
               {listaClientesFiltrada.length == 0 && <EmptyState mensagem="Nenhum cliente localizado" icone="fa-solid fa-user-group" />}
             </div>
