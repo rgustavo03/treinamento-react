@@ -8,6 +8,7 @@ import Table from './componentes/table';
 import Select from './componentes/select'
 import InputMask from './componentes/inputMask';
 import Header from './componentes/header';
+import EmptyState from './componentes/emptyState';
 
 function App() {
 
@@ -337,7 +338,7 @@ function App() {
         <Header
           titulo="Cadastro de Clientes"
           subtitulo={`${listaClientes.length} registros`}
-          icone="fa-user-group" />
+          icone="fa-solid fa-user-group" />
 
         {/* {listaClientes.length == 0 && <Button
           onClick={inicializar}
@@ -505,9 +506,7 @@ function App() {
                 </tbody>
               </Table>}
 
-              {listaClientesFiltrada.length == 0 && <div>
-                Nenhum cliente
-              </div>}
+              {listaClientesFiltrada.length == 0 && <EmptyState mensagem="Nenhum cliente localizado" icone="fa-solid fa-user-group" />}
             </div>
           </div>
         </div>
