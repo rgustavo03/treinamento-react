@@ -206,6 +206,7 @@ function App() {
     console.log('listaClientes =>', listaClientes)
 
     if (idCliente) {
+      //remover da lista o cliente que estou editando
       let novaLista = listaClientes.filter(c => c.id != idCliente);
 
       setListaClientes([...novaLista, dados]);
@@ -221,10 +222,10 @@ function App() {
   return (
     <>
       <h1>Cadastro de Cliente</h1>
-      <Button 
+      {listaClientes.length == 0 && <Button 
           onClick={inicializar} 
           nome="Incializar"
-          disabled={listaClientes.length > 0} />
+          disabled={listaClientes.length > 0} />}
 
       {idCliente && <div className='alert alert-warning my-4'>
         Id Cliente selecionado: {idCliente}
