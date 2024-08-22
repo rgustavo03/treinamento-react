@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { faker } from '@faker-js/faker';
+
 import Input from './componentes/input';
 import Button from './componentes/button';
 import Table from './componentes/table';
 import Select from './componentes/select'
-import { v4 as uuidv4 } from 'uuid';
-import { faker } from '@faker-js/faker';
+import InputMask from './componentes/inputMask';
 
 function App() {
 
@@ -52,6 +54,15 @@ function App() {
     }
     setListaClientesFiltrada(listaFiltrada);
   }, [filtro, listaClientes, filtroDocumento]);
+
+  useEffect(() => {
+    localStorage.setItem('listaCliente', JSON.stringify(listaClientes));
+  }, [listaClientes]);
+
+  useEffect(() => {
+    setCpf('');
+  }, [tipoCliente]);
+
 
   // useEffect(() => {
   //   const listaFiltrada = listaClientes
@@ -139,31 +150,43 @@ function App() {
   function inicializar() {
     //setNome('Joao')
 
-    const clientesDefault = [];
+    const clientesStorage = localStorage.getItem('listaCliente');
 
-    for (let index = 0; index < 10; index++) {
-      // clientesDefault.push({
-      //   id: uuidv4(),
-      //   cpf: ''.padStart(11, index.toString()),
-      //   nome: `cliente ${index}`, //template string,
-      //   email: 'cliente' + index.toString() + '@email.com',
-      //   dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0')
-      // })
+    const listaClientesStorage = clientesStorage ? JSON.parse(clientesStorage) : [];
 
-      clientesDefault.push({
-        id: uuidv4(),
-        //cpf: ''.padStart(11, index.toString()),
-        cpf: index % 2 == 0 ? ''.padStart(11, '1') : ''.padStart(14, '2'),
-        nome: faker.person.fullName(),
-        email: faker.internet.email(),
-        dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0'),
-        tipoCliente: index % 2 == 0 ? 'PF' : 'PJ'
-      })
+    if (!listaClientesStorage || listaClientesStorage.length == 0) {
+      const clientesDefault = [];
+
+      for (let index = 0; index < 10; index++) {
+        // clientesDefault.push({
+        //   id: uuidv4(),
+        //   cpf: ''.padStart(11, index.toString()),
+        //   nome: `cliente ${index}`, //template string,
+        //   email: 'cliente' + index.toString() + '@email.com',
+        //   dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0')
+        // })
+
+        clientesDefault.push({
+          id: uuidv4(),
+          //cpf: ''.padStart(11, index.toString()),
+          cpf: index % 2 == 0 ? ''.padStart(11, '1') : ''.padStart(14, '2'),
+          nome: faker.person.fullName(),
+          email: faker.internet.email(),
+          dataNascimento: '1900-01-' + (index + 1).toString().padStart(2, '0'),
+          tipoCliente: index % 2 == 0 ? 'PF' : 'PJ'
+        })
+      }
+
+      localStorage.setItem('listaCliente', JSON.stringify(clientesDefault));
+
+      setListaClientes(clientesDefault);
+      setListaClientesFiltrada(clientesDefault);
+      console.log('Carregou os clientes default');
+    } else {
+      setListaClientes(listaClientesStorage);
+      setListaClientesFiltrada(listaClientesStorage);
+      console.log('Carregou os clientes default -STORAGE');
     }
-
-    setListaClientes(clientesDefault);
-    setListaClientesFiltrada(clientesDefault);
-    console.log('Carregou os clientes default');
   }
 
   function deletar(id) {
@@ -357,16 +380,20 @@ function App() {
                   value={dataNascimento}
                   onChange={e => setDataNascimento(e.target.value)} />}
 
-                {tipoCliente == "PF" ? <Input
+
+
+                {tipoCliente == "PF" ? <InputMask
                   Nome="CPF"
                   Id="cpf"
                   placeholder="___.___.___-__"
+                  mascara="999.999.999-99"
                   value={cpf}
                   onChange={e => setCpf(e.target.value)} /> :
-                  <Input
+                  <InputMask
                     Nome="CNPJ"
                     Id="cnpj"
                     placeholder="__.___.___/____-__"
+                    mascara="99.999.999/9999-99"
                     value={cpf}
                     onChange={e => setCpf(e.target.value)} />}
 
@@ -482,8 +509,8 @@ function App() {
               </Table>}
 
               {listaClientesFiltrada.length == 0 && <div>
-                Nenhum cliente 
-                </div>}
+                Nenhum cliente
+              </div>}
             </div>
           </div>
         </div>
