@@ -4,7 +4,7 @@ export default function table(parametros) {
     //children - filhos
 
     return (
-        <div class="table-responsive">
+        <div className="table-responsive">
             <table className="table table-striped table-hover">
                 {parametros.children}
             </table>

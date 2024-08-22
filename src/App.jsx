@@ -7,6 +7,7 @@ import Button from './componentes/button';
 import Table from './componentes/table';
 import Select from './componentes/select'
 import InputMask from './componentes/inputMask';
+import Header from './componentes/header';
 
 function App() {
 
@@ -333,14 +334,10 @@ function App() {
     <div className='bg-body-tertiary'>
       <div className='container'>
 
-        <div className="d-flex align-items-center p-3 my-3 text-white bg-primary rounded shadow-sm" >
-
-          <i className="fa-solid fa-user-group me-3 fa-2xl"></i>
-          <div className="lh-1">
-            <h1 className="h6 mb-0 text-white lh-1">Cadastro de Clientes</h1>
-            <small>{listaClientes.length} registros</small>
-          </div>
-        </div>
+        <Header
+          titulo="Cadastro de Clientes"
+          subtitulo={`${listaClientes.length} registros`}
+          icone="fa-user-group" />
 
         {/* {listaClientes.length == 0 && <Button
           onClick={inicializar}
