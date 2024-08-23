@@ -138,7 +138,7 @@ export default function banco() {
                         <div className="my-3 p-3 bg-body rounded shadow-sm">
                             {transacoes.length > 0 && <>
                                 <Table lista={transacoes} />
-                                <div>
+                                <div className='text-end'>
                                     <strong>Total:</strong> {CalcularSaldo().toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                                 </div>
                             </>}
