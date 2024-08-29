@@ -10,10 +10,17 @@ export default function table({ lista }) {
                     const cor = c.tipo == 'D' ? '#198754' : '#dc3545';
                     const icone = c.tipo == 'D' ? 'fa-solid fa-dollar-sign' : 'fa-solid fa-dollar-sign';
 
+                    let data = c.data;
+
+                    if(typeof(c.data) === 'object') {
+                        data = c.data.toString();
+                    }
+                    console.log(typeof(data));
+
                     return (
-                        <tr key={c.tipo}>
+                        <tr key={c.data}>
                             <td style={{width: '1%'}}>
-                                <div class={icone}
+                                <div className={icone}
                                     style={{
                                         padding: '10px',
                                         backgroundColor: cor,
@@ -27,10 +34,10 @@ export default function table({ lista }) {
                             </td>
                             <td style={{width: '1%'}}>
                                 <strong className='d-block text-gray-dark' style={{fontSize: '16px'}}> 
-                                    {c.data.toLocaleTimeString()}
+                                    {data}
                                 </strong>
                                 <div className='text-body-secondary text-center' style={{fontSize: '10px'}}>
-                                    {c.data.toLocaleDateString()}
+                                    {data}
                                 </div>
                             </td>
                             <td style={{ verticalAlign: 'middle' }}>{c.descricao}</td>

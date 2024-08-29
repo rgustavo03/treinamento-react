@@ -1,11 +1,10 @@
 import React from 'react'
-
-import Cliente from './pages/clientes/cliente';
-import Banco from './pages/banco/banco';
+import Index from './router'
 
 export default function App() {
   return (
-    // <Cliente />
-    <Banco />
+    <> 
+      <Index />
+    </>
   )
 }

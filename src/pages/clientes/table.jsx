@@ -2,15 +2,13 @@ import React from 'react'
 import Button from '../../componentes/button';
 import Table from '../../componentes/table';
 
-export default function table({ lista, idCliente }) {
+export default function TableCliente({ lista, idCliente, editar, deletar }) {
     return (
         <Table>
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Data Nascimento</th>
-                    <th>Cpf</th>
-                    <th>Email</th>
+                    <th>Saldo</th>
                     <th></th>
                 </tr>
             </thead>
@@ -19,9 +17,8 @@ export default function table({ lista, idCliente }) {
                     return (
                         <tr key={c.id}>
                             <td>{c.nome}</td>
-                            <td>{c.dataNascimento}</td>
-                            <td>{c.cpf}</td>
-                            <td>{c.email}</td>
+                            <td>{c.saldo}</td>
+                            
                             <td>
                                 <Button
                                     nome="Editar"

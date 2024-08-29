@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import Banco from '../banco/banco';
+
 import Input from '../../componentes/input';
 import Button from '../../componentes/button';
 import Table from '../../componentes/table';
@@ -10,18 +12,15 @@ import Header from '../../componentes/header';
 import EmptyState from '../../componentes/emptyState';
 
 import TableCliente from './table';
-import { salvarCliente, inicializar } from '../../service/cliente'
+import { inicializar } from '../../service/cliente'
+import React from 'react';
+import Menu from '../../componentes/menu';
+import { salvarTransacoesLocalStorage } from '../../service/transacoes';
 
-function Cliente() {
-
-  const tiposCliente = [
-    { label: 'Pessoa Física', value: 'PF' },
-    { label: 'Pessoa Jurídica', value: 'PJ' }
-  ];
+export default function Cliente() {
 
   //let nome = '';
-  const [listaClientes, setListaClientes] = useState([]);
-  const [listaClientesFiltrada, setListaClientesFiltrada] = useState([]);
+  const [listaClientes, setListaClientes] = useState([{}]);
 
   //FILTROS
   const [filtro, setFiltro] = useState('');
@@ -30,43 +29,17 @@ function Cliente() {
   //FORM
   const [idCliente, setIdCliente] = useState('');
   const [nome, setNome] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('');
-  const [tipoCliente, setTipoCliente] = useState('')
-  const [cpf, setCpf] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [confirmacaoSenha, setConfirmacaoSenha] = useState('');
 
 
   useEffect(() => {
-    const listaStorage = inicializar();
-    setListaClientes(listaStorage);
-    setListaClientesFiltrada(listaStorage);
-  }, [])
-
-  useEffect(() => {
-    let listaFiltrada = listaClientes;
-
-    if (filtro) {
-      listaFiltrada = listaFiltrada.filter(x =>
-        x.nome.toUpperCase().includes(filtro.toUpperCase()) ||
-        x.email.toUpperCase().includes(filtro.toUpperCase()));
-    }
-
-    if (filtroDocumento) {
-      listaFiltrada = listaFiltrada.filter(x =>
-        x.cpf.toUpperCase().includes(filtroDocumento.toUpperCase()));
-    }
-    setListaClientesFiltrada(listaFiltrada);
-  }, [filtro, listaClientes, filtroDocumento]);
+    setListaClientes(inicializar());
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('listaCliente', JSON.stringify(listaClientes));
   }, [listaClientes]);
 
-  useEffect(() => {
-    setCpf('');
-  }, [tipoCliente]);
+
 
   function deletar(id) {
     console.log('deletar: ', id);
@@ -78,27 +51,17 @@ function Cliente() {
   function editar(id) {
     console.log('editar: ', id);
 
-    const cliente = listaClientes.find(c => c.id == id);
-
-    setIdCliente(cliente.id);
-    setNome(cliente.nome);
-    setDataNascimento(cliente.dataNascimento);
-    setCpf(cliente.cpf);
-    setEmail(cliente.email);
-    setTipoCliente(cliente.tipoCliente);
-    setSenha(cliente.senha);
-    setConfirmacaoSenha(cliente.confirmacaoSenha);
+    listaClientes.forEach(c => {
+      if(c.id == id) {
+        setIdCliente(c.id);
+        setNome(c.nome);
+      }
+    });
   }
 
   function cancelar() {
-    setNome('');
-    setDataNascimento('');
-    setCpf('');
-    setEmail('');
     setIdCliente('');
-    setSenha('');
-    setConfirmacaoSenha('');
-    setTipoCliente('');
+    setNome('');
   }
 
   function salvar() {
@@ -106,175 +69,139 @@ function Cliente() {
       const dados = {
         id: idCliente ? idCliente : uuidv4(),
         nome,
-        dataNascimento,
-        cpf,
-        email,
-        tipoCliente,
-        senha,
-        confirmacaoSenha
+        saldo: 1000
       };
-      
-      salvarCliente(dados);
 
-      setTipoCliente('');
-      setNome('');
-      setDataNascimento('');
-      setCpf('');
-      setEmail('');
-      setIdCliente('');
-      setSenha('');
-      setConfirmacaoSenha('');
-
-
-      if (idCliente) {
-        let novaLista = listaClientes.filter(c => c.id != idCliente);
-
-        setListaClientes([...novaLista, dados]);
-      } else {
-        setListaClientes([...listaClientes, dados]);
+      if (!nome) {
+        throw new Error('preencha o campo nome');
       }
-    } catch (error) {
+
+      setIdCliente('');
+      setNome('');
+
+      let erro = false;
+
+      listaClientes.forEach(u => {
+        if(u.nome == nome) {
+          erro = true;
+          alert('Nome já registrado');
+        };
+      });
+      if(erro) return // Para a funcao aqui caso achar nome igual
+
+      if (idCliente) { // se idCliente já existe, se trata de edição do usuario
+
+        let novaLista = listaClientes.filter(c => c.id != idCliente);
+        setListaClientes([...novaLista, dados]);
+
+      } else { // cadastro novo usuário
+
+        setListaClientes([...listaClientes, dados]);
+        const transacaoInicial = {
+          tipo: 'D',
+          valor: 1000,
+          data: new Date(),
+          descricao: `Depósito incial realizado por ${dados.nome} na Agência #` + Math.floor(Math.random() * 100)
+        };
+        salvarTransacoesLocalStorage(dados.id, transacaoInicial);
+
+      }
+    }
+    catch (error) {
       alert(error.message);
     }
   }
 
+  
+
   return (
-    <div className='bg-body-tertiary'>
-      <div className='container'>
+    <div>
 
-        <Header
-          titulo="Cadastro de Clientes"
-          subtitulo={`${listaClientes.length} registros`}
-          icone="fa-solid fa-user-group" />
+      <Menu />
 
-        {idCliente && <div className='alert alert-warning my-4'>
-          Id Cliente selecionado: {idCliente}
-        </div>}
+      <div className='bg-body-tertiary'>
+        <div className='container'>
+
+          <Header
+            titulo="Cadastro de Clientes"
+            subtitulo={`${listaClientes.length} registros`}
+            icone="fa-solid fa-user-group"
+            cor=""
+          />
+
+          {idCliente && <div className='alert alert-warning my-4'>
+            Id Cliente selecionado: {idCliente}
+          </div>}
 
 
-        <div className='row'>
+          <div className='row'>
 
-          <div className='col-lg-4'>
-            <div className="my-3 p-3 bg-body rounded shadow-sm">
-              <h6 className="border-bottom pb-2 mb-2">Dados Cliente</h6>
+            <div className='col-lg-4'>
+              <div className="my-3 p-3 bg-body rounded shadow-sm">
+                <h6 className="border-bottom pb-2 mb-2">Dados Cliente</h6>
 
-              <Select
-                Nome="Tipo Cliente"
-                Id="tipo-cliente"
-                Opcoes={tiposCliente}
-                value={tipoCliente}
-                onChange={e => setTipoCliente(e.target.value)} />
-
-              {tipoCliente && <>
                 <Input
-                  Nome={tipoCliente == "PF" ? "Nome" : "Razão Social"}
+                  Nome="Nome"
                   Id="nome"
-                  placeholder={tipoCliente == "PF" ? "Informe seu nome" : "Informe o nome da empresa"}
+                  placeholder="Informe seu nome"
                   value={nome}
-                  onChange={e => setNome(e.target.value)} />
+                  onChange={e => setNome(e.target.value)}
+                />
+                
+                <hr />
 
-                {tipoCliente == "PF" && <Input
-                  Nome="Data de Nascimento"
-                  Id="data-nascimento"
-                  type="date"
-                  value={dataNascimento}
-                  onChange={e => setDataNascimento(e.target.value)} />}
+                <Button onClick={salvar} nome="Salvar" tipoBotao="" tamanho="" disabled="">
+                  <i className="fa-solid fa-floppy-disk"></i>
+                </Button>
 
+                {idCliente && (
+                  <Button onClick={cancelar} nome="Cancelar" tipoBotao="btn-danger" tamanho="" disabled="">
+                    <i className="fa-solid fa-xmark"></i>
+                  </Button>
+                )}
 
-
-                {tipoCliente == "PF" ? <InputMask
-                  Nome="CPF"
-                  Id="cpf"
-                  placeholder="___.___.___-__"
-                  mascara="999.999.999-99"
-                  value={cpf}
-                  onChange={e => setCpf(e.target.value)} /> :
-                  <InputMask
-                    Nome="CNPJ"
-                    Id="cnpj"
-                    placeholder="__.___.___/____-__"
-                    mascara="99.999.999/9999-99"
-                    value={cpf}
-                    onChange={e => setCpf(e.target.value)} />}
-
-                <Input
-                  Nome="Email"
-                  Id="email"
-                  type="email"
-                  placeholder="exemplo@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)} />
-
-                <Input
-                  Nome="Senha"
-                  Id="senha"
-                  type="password"
-                  placeholder="digite sua senha"
-                  value={senha}
-                  onChange={e => setSenha(e.target.value)} />
-
-                <Input
-                  Nome="Confirmacao Senha"
-                  Id="confirmacao-senha"
-                  type="password"
-                  placeholder="digite a confirmação de senha"
-                  value={confirmacaoSenha}
-                  onChange={e => setConfirmacaoSenha(e.target.value)} />
-
-                {senha &&
-                  (senha == confirmacaoSenha ?
-                    <div className='text-success'>Senha igual</div> :
-                    <div className='text-danger'>Senha diferente</div>)}
-
-              </>}
-              <hr />
-
-              <Button onClick={salvar} nome="Salvar">
-                <i className="fa-solid fa-floppy-disk"></i>
-              </Button>
-
-              {idCliente && <Button onClick={cancelar} nome="Cancelar" tipoBotao="btn-danger">
-                <i className="fa-solid fa-xmark"></i>
-              </Button>}
-
-            </div>
-          </div>
-
-          <div className='col-lg-8'>
-            <div className="my-3 p-3 bg-body rounded shadow-sm">
-              <div className='row'>
-                <div className='col-7'>
-                  <Input
-                    Nome="Filtro (Nome, Email)"
-                    Id="filtro"
-                    placeholder="Digite o nome do cliente"
-                    value={filtro}
-                    onChange={e => setFiltro(e.target.value)} />
-
-                </div>
-                <div className='col-5'>
-                  <Input
-                    Nome="Filtro Documento"
-                    Id="filtro-documento"
-                    placeholder="Digite o documento do cliente"
-                    value={filtroDocumento}
-                    onChange={e => setFiltroDocumento(e.target.value)} />
-
-                </div>
               </div>
+            </div>
 
-              {listaClientesFiltrada.length > 0 && 
-                <TableCliente 
-                  lista={listaClientesFiltrada} 
-                  idCliente={idCliente} />}
+            <div className='col-lg-8'>
+              <div className="my-3 p-3 bg-body rounded shadow-sm">
+                <div className='row'>
+                  <div className='col-7'>
+                    <Input
+                      Nome="Filtro (Nome, Email)"
+                      Id="filtro"
+                      placeholder="Digite o nome do cliente"
+                      value={filtro}
+                      onChange={e => setFiltro(e.target.value)} />
 
-              {listaClientesFiltrada.length == 0 && <EmptyState mensagem="Nenhum cliente localizado" icone="fa-solid fa-user-group" />}
+                  </div>
+                  <div className='col-5'>
+                    <Input
+                      Nome="Filtro Documento"
+                      Id="filtro-documento"
+                      placeholder="Digite o documento do cliente"
+                      value={filtroDocumento}
+                      onChange={e => setFiltroDocumento(e.target.value)} />
+
+                  </div>
+                </div>
+
+                {listaClientes.length > 0 && 
+                  <TableCliente 
+                    lista={listaClientes} 
+                    idCliente={idCliente}
+                    editar={editar}
+                    deletar={deletar}
+                  />}
+
+                {listaClientes.length == 0 && <EmptyState mensagem="Nenhum cliente localizado" icone="fa-solid fa-user-group" />}
+              </div>
             </div>
           </div>
         </div>
       </div>
+      
     </div>
   )
 }
 
-export default Cliente
