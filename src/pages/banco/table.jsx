@@ -15,7 +15,6 @@ export default function table({ lista }) {
                     if(typeof(c.data) === 'object') {
                         data = c.data.toString();
                     }
-                    console.log(typeof(data));
 
                     return (
                         <tr key={c.data}>

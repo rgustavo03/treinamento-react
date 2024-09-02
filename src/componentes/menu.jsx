@@ -21,6 +21,12 @@ export default function Menu() {
               <li className="nav-item">
                 <Link to="/banco" className="nav-link active" aria-current="page" >Banco</Link>
               </li>
+              <li className="nav-item">
+                <Link to="/perguntas" className="nav-link active" aria-current="page" >Perguntas</Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/jogo" className="nav-link active" aria-current="page" >Show do Milhão</Link>
+              </li>
             </ul>
           </div>
         </div>

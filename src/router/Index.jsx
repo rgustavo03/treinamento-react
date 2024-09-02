@@ -4,6 +4,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Banco from "../pages/banco/banco";
 import Cliente from "../pages/clientes/cliente";
 import Home from "../pages/home";
+import CadastroPerguntas from "../pages/show/cadastroPerguntas";
+import ShowDoMilhao from "../pages/show/jogoMilhao";
 
 export default function Index() {
 
@@ -19,6 +21,14 @@ export default function Index() {
         {
             path: '/banco',
             element: <Banco />
+        },
+        {
+            path: '/perguntas',
+            element: <CadastroPerguntas />
+        },
+        {
+            path: '/jogo',
+            element: <ShowDoMilhao />
         }
     ]);
 

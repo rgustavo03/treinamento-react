@@ -259,7 +259,7 @@ export default function Banco() {
 
                         <div className='col-lg-4'>
                             <div className="my-3 p-3 bg-body rounded shadow-sm">
-                                <h6 className="border-bottom pb-2 mb-2">Dados Transação</h6>
+                                <h6 className="border-bottom pb-2 mb-2">Dados da Transação</h6>
 
                                 <Select
                                     Nome="Tipo Transação"
