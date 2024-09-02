@@ -219,7 +219,7 @@ export default function Banco() {
                                     </select>
                                 </div>
                                 <div className="mb-3">
-                                    {usuario? `Saldo: R$ ${usuario.saldo}` : ''}
+                                    {usuario? `Saldo: R$ ${usuario.saldo.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}` : ''}
                                 </div>
                             </div>
                         </div>

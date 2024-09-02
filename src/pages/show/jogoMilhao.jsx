@@ -304,12 +304,14 @@ export default function ShowDoMilhao() {
     setListaUsuarios(novaLista);
     localStorage.setItem('listaCliente', JSON.stringify(novaLista));
 
+    const valorFormatado = parseFloat(valor).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+
     // Salvar transação
     const transacao = {
       tipo: 'D',
       valor: valor,
       data: new Date(),
-      descricao: `Ganhou ${valor} no jogo do Milhao`
+      descricao: `Ganhou ${valorFormatado} no jogo do Milhao`
     };
     salvarTransacoesLocalStorage(idUsuario, transacao);
   }
@@ -367,9 +369,9 @@ export default function ShowDoMilhao() {
                 </div>
               </div>
 
-              <p>Acertar: {infoEtapa[(etapa - 1)].acertar}</p>
-              <p>Errar: {infoEtapa[(etapa - 1)].errar}</p>
-              <p>Parar: {infoEtapa[(etapa - 1)].parar}</p>
+              <p>Acertar: {infoEtapa[(etapa - 1)].acertar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+              <p>Errar: {infoEtapa[(etapa - 1)].errar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+              <p>Parar: {infoEtapa[(etapa - 1)].parar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
 
               <Button
                 nome="Usar carta"
