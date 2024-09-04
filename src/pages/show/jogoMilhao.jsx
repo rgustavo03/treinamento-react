@@ -5,6 +5,10 @@ import { inicializar } from "../../service/cliente";
 import { salvarTransacoesLocalStorage } from "../../service/transacoes";
 import Button from "../../componentes/button";
 
+import styled from "styled-components";
+
+import "../../css/jogo.css";
+
 export default function ShowDoMilhao() {
 
   const [listaUsuarios, setListaUsuarios] = useState(inicializar()); // pega usuarios de localStorage
@@ -52,6 +56,8 @@ export default function ShowDoMilhao() {
   ];
 
   const [ajuda, setAjuda] = useState(true);
+
+  const [msgAjuda, setMsgAjuda] = useState('');
 
   //--------------
 
@@ -152,6 +158,8 @@ export default function ShowDoMilhao() {
     setRodadaNivel((rodadaNivel + 1));
     setEtapa((etapa + 1)); // Etapa que conta o valor que o usuario vai receber dependendo de sua ação
     setAjuda(true);
+    corAlternativas([]);
+    setMsgAjuda(''); // Limpar msg de ajuda
 
   }
 
@@ -191,46 +199,68 @@ export default function ShowDoMilhao() {
       if(alternativa != perguntaAtual.resposta) lista.push(alternativa);
     }
 
+    corAlternativas(lista);
+
+    // setMsgAjuda();
     alert(`${nomeCarta}. Carta(s) errada(s): ${lista}`);
   }
 
-  //--------------
-
-  function universitarios() {
-    if(!ajuda) {
-      alert('Você pode pedir ajuda aos universitários na próxima rodada.');
-      return // para a funcao usarCarta()
+  function corAlternativas(lista) {
+    // lista vazia significa para voltar ao estilo padrão das alternativas
+    if(lista.length == 0) {
+      perguntaAtual.alternativas.map(alt => {
+        document.getElementById(alt.alt).style.backgroundColor = "white";
+        document.getElementById(alt.alt).style.borderColor = "#00b436";
+      });
+      return
     }
 
-    setAjuda(false); // para não poder usar a carta mais de uma vez na mesma pergunta
-
-    const alternativas = perguntaAtual.alternativas;
-    const alternativa = alternativas[Math.floor(Math.random() * alternativas.length)];
-    alert(`As placas levantadas indicam (${alternativa.alt}) ${alternativa.valor}`);
+    // Caso lista tenha elementos, mudar estilo destes: para ficar vermelhos e indicar que são as erradas
+    lista.forEach(alt => {
+      document.getElementById(alt).style.backgroundColor = "#f04848";
+      document.getElementById(alt).style.borderColor = "#b80000";
+    });
   }
 
   //--------------
 
-  function placas() {
+  function convidados(tipo) {
     if(!ajuda) {
-      alert('Você pode usar as placas na próxima rodada.');
+      alert('Você pode pedir ajuda na próxima rodada.');
       return // para a funcao usarCarta()
     }
 
     setAjuda(false); // para não poder usar a carta mais de uma vez na mesma pergunta
 
-    const alternativas = perguntaAtual.alternativas;
-    const alternativa = alternativas[Math.floor(Math.random() * alternativas.length)];
-    alert(`Os universitários acham que é a alterna tiva (${alternativa.alt}) ${alternativa.valor}`);
+    let porcentagem = 100; // valor será tirado daqui e distribuido para as opcoes abaixo
+    let a = 0;
+    let b = 0;
+    let c = 0;
+    let d = 0;
+
+    for(let i = 1; i <= 4; i++) {
+      if(i == 4) {
+        d = porcentagem; // pegando a porcentagem restante;
+      }
+
+      const porcentagemAleatoria = Math.floor(Math.random() * porcentagem); // Numero aleatorio (min: 0, max: porcentagem restante)
+      porcentagem = porcentagem - porcentagemAleatoria; // subtrai de porcentagem o numero aleatorio obtido acima
+
+      if(i == 1) a = porcentagemAleatoria;
+      if(i == 2) b = porcentagemAleatoria;
+      if(i == 3) c = porcentagemAleatoria;
+    }
+
+    const msg = `${a}% indicam (a), ${b}% indicam (b), ${c}% indicam (c) e ${d}% indicam (d).`;
+
+    if(tipo == 'universitarios') setMsgAjuda(`Universitários: ${msg}`);
+    if(tipo == 'placas') setMsgAjuda(`Placas: ${msg}`);
   }
 
   //--------------
 
   function pular() {
-    if(pulos == 3) {
-      alert('Você não tem mais pulos disponíveis!');
-      return
-    }
+    if(pulos == 3) return
 
     setPulos((pulos + 1));
 
@@ -239,9 +269,9 @@ export default function ShowDoMilhao() {
       return
     }
 
-    alert('Você ainda tem ' + (3 - pulos - 1) + ' pulos disponíveis!');
-
     setAjuda(true); // Para garantir que carta estará disponível na próxima rodada. Mudar regra?
+    corAlternativas([]); // Todas as alternativas ficarem estilo padrão
+    setMsgAjuda(''); // Limpar msg de ajuda
   }
 
   //--------------
@@ -330,7 +360,6 @@ export default function ShowDoMilhao() {
               <select className="form-select" onChange={(e) => setIdUsuario(e.target.value)}>
                 <option key="-" value="">Selecione o usuário</option>
                 {listaUsuarios.map(u => {
-                  //
                   return <option key={u.id} value={u.id}>{u.nome}</option>
                 })}
               </select>
@@ -339,8 +368,8 @@ export default function ShowDoMilhao() {
             <br />
 
             {!jogar && (
-              <Button onClick={iniciar} nome="Iniciar jogo" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
-                <i className="fa-solid fa-floppy-disk"></i>
+              <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
+                Iniciar jogo
               </Button>
             )}
 
@@ -351,74 +380,44 @@ export default function ShowDoMilhao() {
       <div className="area-jogo">
         {jogar? (
 
-          <div className='col-lg-4'>
-            <div className="my-3 p-3 bg-body rounded shadow-sm">
+          <div className='interface'>
 
-              <div className="pergunta"> {/* chamar um componente, talvez */}
-                <h6 className="border-bottom pb-2 mb-2">{perguntaAtual.titulo}</h6>
-                <p>{perguntaAtual.nivel}</p>
-                <div>
-                  {perguntaAtual.alternativas.map(item => {
-                    //
-                    return (
-                      <Button key={item.alt} nome="" tipoBotao="" tamanho="" disabled="" onClick={() => verificarResposta(item.alt)}>
-                        {item.valor}
-                      </Button>
-                    )
-                  })}
+            <div className="cima">
+              <div className="pergunta">{perguntaAtual.titulo}</div>
+              <button className="parar" onClick={() => parar()}>Parar</button>
+            </div>
+
+            <div className="meio">
+              <div className="alternativas">
+                {perguntaAtual.alternativas.map(item => {
+                  //
+                  return (
+                    <button id={item.alt} className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt)}>{`(${item.alt})`} {item.valor}</button>
+                  )
+                })}
+              </div>
+              <div className="ajudas">
+                <div className="ajudas-cima">
+                  <button className="cartas" onClick={() => usarCarta()}>Cartas</button>
+                  <button className="universitarios" onClick={() => convidados('universitarios')}>Universitários</button>
+                  <button className="placas" onClick={() => convidados('placas')}>Placas</button>
+                </div>
+                <div className="pulos">
+                  {pulos == 0? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                  {pulos <= 1? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                  {pulos <= 2? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
                 </div>
               </div>
-
-              <p>Acertar: {infoEtapa[(etapa - 1)].acertar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-              <p>Errar: {infoEtapa[(etapa - 1)].errar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-              <p>Parar: {infoEtapa[(etapa - 1)].parar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-
-              <Button
-                nome="Usar carta"
-                tipoBotao="btn-warning"
-                tamanho="btn-sm"
-                onClick={() => usarCarta()}
-                disabled={ajuda ? false : true}>
-                <i className=""></i>
-              </Button>
-
-              <Button
-                nome="Universitários"
-                tipoBotao="btn-warning"
-                tamanho="btn-sm"
-                onClick={() => universitarios()}
-                disabled={ajuda ? false : true}>
-                <i className=""></i>
-              </Button>
-
-              <Button
-                nome="Placas"
-                tipoBotao="btn-warning"
-                tamanho="btn-sm"
-                onClick={() => placas()}
-                disabled={ajuda ? false : true}>
-                <i className=""></i>
-              </Button>
-
-              <Button
-                nome="Pular"
-                tipoBotao="btn-warning"
-                tamanho="btn-sm"
-                onClick={() => pular()}
-                disabled={ajuda ? false : true}>
-                <i className=""></i>
-              </Button>
-
-              <Button
-                nome="Parar"
-                tipoBotao="btn-warning"
-                tamanho="btn-sm"
-                onClick={() => parar()}
-                disabled={ajuda ? false : true}>
-                <i className=""></i>
-              </Button>
-
             </div>
+
+            <div className="msg">{msgAjuda}</div>
+
+            <div className="baixo">
+              <i>Errar: {infoEtapa[(etapa - 1)].errar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+              <i>Parar: {infoEtapa[(etapa - 1)].parar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+              <i>Acertar: {infoEtapa[(etapa - 1)].acertar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+            </div>
+
           </div>
 
         ) : (

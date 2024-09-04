@@ -1,0 +1,153 @@
+
+.area-jogo {
+  display: flex;
+  justify-content: center;
+}
+
+.interface {
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  padding: 5px;
+  border: 2px solid rgb(41, 37, 37);
+  border-radius: 5px;
+  background: rgb(0,102,65);
+  background: linear-gradient(140deg, rgba(0,102,65,1) 0%, rgba(0,60,20,1) 47%, rgba(0,8,33,1) 100%);
+}
+
+.cima {
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+}
+
+.pergunta {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 23px;
+  color: white;
+}
+
+.parar {
+  width: 100px;
+  height: 50px;
+  border: 1px solid #212121;
+  border-radius: 2px;
+  color: white;
+  font-size: 18px;
+  background: rgb(242,59,59);
+  background: linear-gradient(140deg, rgba(242,59,59,1) 0%, rgba(213,8,8,1) 46%, rgba(133,0,0,1) 100%);
+}
+
+.meio {
+  display: flex;
+  flex-direction: row;
+  column-gap: 5px;
+  height: 280px;
+}
+
+.alternativas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  row-gap: 8px;
+}
+
+.alt-button {
+  flex: 1;
+  background-color: white;
+  border: 2px solid #00b436;
+  border-radius: 7px;
+  font-size: 18px;
+  transition: 0.2s;
+}
+.alt-button:hover {
+  background-color: rgb(192, 207, 197);
+}
+
+.ajudas {
+  width: 330px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.ajudas-cima, .pulos {
+  display: flex;
+  flex-direction: row;
+  column-gap: 5px;
+  padding: 6px;
+}
+
+.ajudas-cima button, .pulos button {
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 64%;
+  border: 1px solid white;
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.cartas {
+  background-image: url("../img/cartas.png");
+}
+.universitarios {
+  background-image: url("../img/universitarios.png");
+}
+.placas {
+  background-image: url("../img/placas.png");
+}
+.pular-btn {
+  background-image: url("../img/pular.png");
+}
+
+.ajudas-cima button:disabled, .pulos button:disabled {
+  opacity: 0.3;
+}
+
+
+
+.msg {
+  height: 50px;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid white;
+  border-radius: 6px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+
+.baixo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding-bottom: 20px;
+}
+
+.baixo i {
+  height: 40px;
+  font-size: 18px;
+  color: white;
+  background: rgb(176,133,0);
+  background: linear-gradient(140deg, rgba(176,133,0,1) 0%, rgba(200,147,0,1) 46%, rgba(133,94,0,1) 100%);
+  border: 2px solid #fdd03a;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}

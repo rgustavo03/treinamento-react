@@ -17,7 +17,7 @@ export default function TableCliente({ lista, idCliente, editar, deletar }) {
                     return (
                         <tr key={c.id}>
                             <td>{c.nome}</td>
-                            <td>{c.saldo.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</td>
+                            <td>{parseFloat(c.saldo).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</td>
                             
                             <td>
                                 <Button

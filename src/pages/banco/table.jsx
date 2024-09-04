@@ -10,11 +10,13 @@ export default function table({ lista }) {
                     const cor = c.tipo == 'D' ? '#198754' : '#dc3545';
                     const icone = c.tipo == 'D' ? 'fa-solid fa-dollar-sign' : 'fa-solid fa-dollar-sign';
 
-                    let data = c.data;
+                    let dataString = c.data;
 
-                    if(typeof(c.data) === 'object') {
-                        data = c.data.toString();
+                    if(typeof(c.data) != 'string') {
+                        dataString = c.data.toString();
                     }
+
+                    let data = new Date(dataString);
 
                     return (
                         <tr key={c.data}>
@@ -33,10 +35,10 @@ export default function table({ lista }) {
                             </td>
                             <td style={{width: '1%'}}>
                                 <strong className='d-block text-gray-dark' style={{fontSize: '16px'}}> 
-                                    {data}
+                                    {data.getDate()}/{data.getMonth()}
                                 </strong>
                                 <div className='text-body-secondary text-center' style={{fontSize: '10px'}}>
-                                    {data}
+                                    {data.getHours()}:{data.getUTCMinutes()}
                                 </div>
                             </td>
                             <td style={{ verticalAlign: 'middle' }}>{c.descricao}</td>
