@@ -15,6 +15,7 @@ export default function CadastroPerguntas() {
   const [d, setD] = useState('');
   const [resposta, setResposta] = useState('');
   const [nivel, setNivel] = useState('');
+  const [categoria, setCategoria] = useState('');
 
   //----------
 
@@ -29,7 +30,8 @@ export default function CadastroPerguntas() {
       titulo: titulo,
       alternativas: [{alt: 'a', valor: a}, {alt: 'b', valor: b}, {alt: 'c', valor: c}, {alt: 'd', valor: d}],
       resposta: resposta,
-      nivel: nivel
+      nivel: nivel,
+      categoria: categoria
     };
 
     salvarPergunta(pergunta);
@@ -73,6 +75,17 @@ export default function CadastroPerguntas() {
                 <option value="facil">Fácil</option>
                 <option value="medio">Médio</option>
                 <option value="dificil">Difícil</option>
+              </select>
+
+              <br />
+
+              <select name="categoria" className="form-select" onChange={(e) => setCategoria(e.target.value)}>
+                <option value="">Selecione a categoria</option>
+                <option value="geral">Geral</option>
+                <option value="matematica">Matemática</option>
+                <option value="geografia">Geografia</option>
+                <option value="ciencias">Ciências</option>
+                <option value="historia">História</option>
               </select>
 
               <br />

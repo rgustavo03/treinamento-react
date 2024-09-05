@@ -5,8 +5,6 @@ import { inicializar } from "../../service/cliente";
 import { salvarTransacoesLocalStorage } from "../../service/transacoes";
 import Button from "../../componentes/button";
 
-import styled from "styled-components";
-
 import "../../css/jogo.css";
 
 export default function ShowDoMilhao() {
@@ -98,6 +96,8 @@ export default function ShowDoMilhao() {
   //--------------
 
   function iniciar() {
+
+    setPerguntasStorage(getPerguntas());
 
     if(perguntasStorage.length < 16) {
       alert('Registre mais perguntas');
@@ -264,10 +264,7 @@ export default function ShowDoMilhao() {
 
     setPulos((pulos + 1));
 
-    if((3 - pulos - 1) == 0) {
-      alert('Esse foi seu último pulo!');
-      return
-    }
+    if((3 - pulos - 1) == 0) alert('Esse foi seu último pulo!');
 
     setAjuda(true); // Para garantir que carta estará disponível na próxima rodada. Mudar regra?
     corAlternativas([]); // Todas as alternativas ficarem estilo padrão
@@ -278,6 +275,12 @@ export default function ShowDoMilhao() {
 
   function parar() { // Encerrar o jogo, resetando os dados do jogo
     alert('Você decidiu parar o jogo');
+
+    if(etapa == 1) {
+      encerrar();
+      return
+    }
+
     darPremio('parar');
   }
 
@@ -373,8 +376,37 @@ export default function ShowDoMilhao() {
               </Button>
             )}
 
+            <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
+              Iniciar jogo
+            </Button>
+
         </div>
       </div>
+
+
+      <br />
+
+      <div>
+        <h4>Perguntas fáceis</h4>
+        {listaFacil.map(p => {
+          return <div key={p.titulo}>{p.titulo}</div>
+        })}
+        <br />
+
+        <h4>Perguntas intermediárias</h4>
+        {listaMedio.map(p => {
+          return <div key={p.titulo}>{p.titulo}</div>
+        })}
+        <br />
+
+        <h4>Perguntas difíceis</h4>
+        {listaDificil.map(p => {
+          return <div key={p.titulo}>{p.titulo}</div>
+        })}
+        <br />
+      </div>
+
+      <br />
 
 
       <div className="area-jogo">
@@ -383,7 +415,7 @@ export default function ShowDoMilhao() {
           <div className='interface'>
 
             <div className="cima">
-              <div className="pergunta">{perguntaAtual.titulo}</div>
+              <div className="pergunta">{etapa}. {perguntaAtual.titulo}</div>
               <button className="parar" onClick={() => parar()}>Parar</button>
             </div>
 
