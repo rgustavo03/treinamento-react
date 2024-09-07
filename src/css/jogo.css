@@ -1,8 +1,29 @@
 
-.area-jogo {
-  display: flex;
-  justify-content: center;
+.superior { display: flex; flex-direction: row; column-gap: 20px;  }
+
+
+.tabela-pontuacoes .topo {
+  border-bottom: 1px solid #a7a7a7;
 }
+
+.tabela-pontuacoes tr {
+  height: 35px;
+}
+
+.tabela-pontuacoes .linha {
+}
+
+.tabela-pontuacoes .table-th { 
+  font-weight: 600;
+}
+
+.tabela-pontuacoes .coluna {
+  width: 200px;
+}
+
+
+
+.area-jogo { display: flex; justify-content: center; }
 
 .interface {
   width: 800px;
@@ -16,20 +37,9 @@
   background: linear-gradient(140deg, rgba(0,102,65,1) 0%, rgba(0,60,20,1) 47%, rgba(0,8,33,1) 100%);
 }
 
-.cima {
-  display: flex;
-  flex-direction: row;
-  height: 100px;
-}
+.cima { display: flex; flex-direction: row; height: 100px; }
 
-.pergunta {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 23px;
-  color: white;
-}
+.pergunta { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 23px; color: white; }
 
 .parar {
   width: 100px;
@@ -42,20 +52,9 @@
   background: linear-gradient(140deg, rgba(242,59,59,1) 0%, rgba(213,8,8,1) 46%, rgba(133,0,0,1) 100%);
 }
 
-.meio {
-  display: flex;
-  flex-direction: row;
-  column-gap: 5px;
-  height: 280px;
-}
+.meio { display: flex; flex-direction: row; column-gap: 5px; height: 280px; }
 
-.alternativas {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 6px;
-  row-gap: 8px;
-}
+.alternativas { flex: 1; display: flex; flex-direction: column; padding: 6px; row-gap: 8px; }
 
 .alt-button {
   flex: 1;
@@ -65,23 +64,12 @@
   font-size: 18px;
   transition: 0.2s;
 }
-.alt-button:hover {
-  background-color: rgb(192, 207, 197);
-}
+.alt-button:hover { background-color: rgb(192, 207, 197); }
 
-.ajudas {
-  width: 330px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-}
 
-.ajudas-cima, .pulos {
-  display: flex;
-  flex-direction: row;
-  column-gap: 5px;
-  padding: 6px;
-}
+.ajudas { width: 330px; display: flex; flex-direction: column; justify-content: space-around; }
+
+.ajudas-cima, .pulos { display: flex; flex-direction: row; column-gap: 5px; padding: 6px; }
 
 .ajudas-cima button, .pulos button {
   flex: 1;
@@ -98,21 +86,41 @@
   justify-content: center;
 }
 
-.cartas {
-  background-image: url("../img/cartas.png");
-}
-.universitarios {
-  background-image: url("../img/universitarios.png");
-}
-.placas {
-  background-image: url("../img/placas.png");
-}
-.pular-btn {
-  background-image: url("../img/pular.png");
+.cartas { background-image: url("../img/cartas.png"); }
+
+.universitarios { background-image: url("../img/universitarios.png"); }
+
+.placas { background-image: url("../img/placas.png"); }
+
+.pular-btn { background-image: url("../img/pular.png"); max-width: 110px; }
+
+.ajudas-cima button:disabled, .pulos button:disabled { opacity: 0.3; }
+
+.ajudas-cima .comprar-cartas, .ajudas-cima .comprar-universitarios, .ajudas-cima .comprar-placas {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
 }
 
-.ajudas-cima button:disabled, .pulos button:disabled {
-  opacity: 0.3;
+.ajudas-cima .comprar-cartas {}
+
+.comprar-universitarios {}
+
+.comprar-placas {}
+
+.comprar-ajuda-texto {
+  margin: 0;
+}
+
+.comprar-ajuda-preco {
+  margin: 0;
+  border: 1px solid #fdd03a;
+  background: rgb(176,133,0);
+  background: linear-gradient(140deg, rgba(176,133,0,1) 0%, rgba(200,147,0,1) 46%, rgba(133,94,0,1) 100%);
+  border-radius: 10px;
+  color: white;
+  padding-left: 7px;
+  padding-right: 7px;
 }
 
 

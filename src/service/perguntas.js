@@ -4,7 +4,7 @@ export function getPerguntas() {
 
   const perguntas = perguntasStorage ? JSON.parse(perguntasStorage) : [];
 
-  localStorage.setItem('perguntas', JSON.stringify(perguntas));
+  localStorage.setItem('perguntas', JSON.stringify(perguntas)); // Faz sentido isso aqui?
 
   return perguntas;
 }

@@ -6,14 +6,24 @@ import { salvarTransacoesLocalStorage } from "../../service/transacoes";
 import Button from "../../componentes/button";
 
 import "../../css/jogo.css";
+import { ComprarAjuda } from "../../service/compraAjuda";
+import { getRanking, salvarPontuacaoRanking } from "../../service/ranking";
+import LinhaPontuacao from "./linhaPontuacao";
 
 export default function ShowDoMilhao() {
+
+  const formatoPergunta = { // como se fosse fazer tipagem
+    titulo: '',
+    alternativas: [{alt: '', valor: ''},{alt: '', valor: ''}, {alt: '', valor: ''}, {alt: '', valor: ''}],
+    resposta: '',
+    nivel: ''
+  }
 
   const [listaUsuarios, setListaUsuarios] = useState(inicializar()); // pega usuarios de localStorage
 
   const [idUsuario, setIdUsuario] = useState(''); // id do usuario para jogar
 
-  const [perguntasStorage, setPerguntasStorage] = useState(getPerguntas()); // pega perguntas de localStorage
+  const [pontuacoes, setPontuacoes] = useState(getRanking());
 
   //--------------
 
@@ -23,7 +33,11 @@ export default function ShowDoMilhao() {
   const [listaMedio, setListaMedio] = useState([{}]); // lista perguntas nivel medio
   const [listaDificil, setListaDificil] = useState([{}]); // lista perguntas nivek dificil
 
-  const [perguntaAtual, setPerguntaAtual] = useState({}); // objeto pergunta
+  const infoCategorias = ["geral", "geografia", "matematica", "ciencias", "historia"];
+
+  const [categorias, setCategorias] = useState([""]);
+
+  const [perguntaAtual, setPerguntaAtual] = useState(formatoPergunta); // objeto pergunta
 
   const [rodada, setRodada] = useState(0); // rodadas em geral ( com pulos )
   const [rodadaNivel, setRodadaNivel] = useState(0); // a rodada que conta para avançar os niveis
@@ -53,35 +67,84 @@ export default function ShowDoMilhao() {
     {etapa: 16, acertar: 1000000, parar: 500000, errar: 0}
   ];
 
+  const [perguntaExtra, setPerguntaExtra] = useState(formatoPergunta); // objeto pergunta extra
+  const [etapaExtra, setEtapaExtra] = useState(0); // quanto pergunta extra irá aparecer
+  const [extra, setExtra] = useState(1); // ponto extra (multiplicação do prêmio)
+
   const [ajuda, setAjuda] = useState(true);
+
+  const [cartas, setCartas] = useState(1);
+  const [universitarios, setUniversitarios] = useState(1);
+  const [placas, setPlacas] = useState(1);
 
   const [msgAjuda, setMsgAjuda] = useState('');
 
   //--------------
 
-  useEffect(() => {
+  function changeCategorias(checked, valor) {
 
-    let lista = perguntasStorage;
+    const incluiValor = categorias.includes(valor);
+
+    if(checked) { // se estiver checado, add item a categorias
+
+      if(!incluiValor) setCategorias([...categorias, valor]);
+
+    } else { // nao estiver checado, remover item de categorias
+
+      const novaListaCategorias = [];
+
+      categorias.forEach(c => {
+        if(c != valor) novaListaCategorias.push(c);
+      });
+
+      setCategorias(novaListaCategorias);
+    }
+  }
+
+  //--------------
+
+  function pegarPerguntas() {
+
+    let lista = getPerguntas();
     const novaLista = []; // recebera perguntas aleatoriamente
 
     const perguntasFaceis = [];
     const perguntasMedianas = [];
     const perguntasDificeis = [];
 
+    const indexRandom = Math.floor(Math.random() * (infoEtapa.length - 1));
+
+    setEtapaExtra(indexRandom);
+
+    //******* WHILE -- Embaralhar perguntas, permanecer as que forem das categorias selecionadas
     while(lista.length > 0) {
       const perg = lista[Math.floor(Math.random() * lista.length)]; // posicao aleatoria // (lista.length - 1) ?
+
       novaLista.push(perg); // adiociona pergunta aleatoria em novaLista
 
-      // Eliminar itens da lista
       const listaAlterada = []; // essa aqui substituirá a lista com seus dados que recebera no forEach abaixo
-      lista.forEach(e => {
-        if(e.titulo == perg.titulo) return
-        listaAlterada.push(e); // recebe as perguntas (menos a que foi adicionada em novaLista)
+
+      lista.forEach(p => { // Eliminar itens da lista
+
+        if(p.titulo == perg.titulo) return // elimina pergunta já adicionada (diminuir lista até sobrar nada)
+        if(!(categorias.includes(p.categoria))) return // elimina pergunta caso categoria não esta incluida
+        listaAlterada.push(p); // recebe uma nova pergunta com as condicoes acima
+
       });
+
       lista = listaAlterada; // lista agora e uma lista sem o elemento que foi adicionado
     }
+    //*******
 
-    novaLista.forEach(p => { // separa as peguntas por nivel e coloca em cada lista pelo respectivo nivel
+    novaLista.forEach(p => { // separa as peguntas por nivel e coloca em cada lista, separa pergunta extra
+      // Separar pergunta extra
+      if(perguntaExtra.titulo.length == 0) {
+        if(indexRandom < 10 && p.nivel == 'facil') setPerguntaExtra(p);
+        if(indexRandom >= 10 && indexRandom < 14 && p.nivel == 'medio') setPerguntaExtra(p);
+        if(indexRandom >= 14 && p.nivel == 'dificil') setPerguntaExtra(p);
+      }
+
+      // Separar perguntas por nível
       if(p.nivel == 'facil') perguntasFaceis.push(p);
       if(p.nivel == 'medio') perguntasMedianas.push(p);
       if(p.nivel == 'dificil') perguntasDificeis.push(p);
@@ -91,24 +154,30 @@ export default function ShowDoMilhao() {
     setListaMedio(perguntasMedianas);
     setListaDificil(perguntasDificeis);
 
-  }, [perguntasStorage]);
+    setPerguntaAtual(perguntasFaceis[0]); // definir primeira pergunta (não gerar erro no array.map de alternativas)
+
+    if(perguntasFaceis.length < 13 || perguntasMedianas.length < 7 || perguntasDificeis.length < 5) {
+      alert('Registre mais perguntas');
+      return false
+    }
+    return true
+  }
 
   //--------------
 
   function iniciar() {
 
-    setPerguntasStorage(getPerguntas());
-
-    if(perguntasStorage.length < 16) {
-      alert('Registre mais perguntas');
+    if(categorias.length < 4) {
+      alert("Selecione pelo menos três categorias");
       return
     }
 
-    console.log('Jogo começou');
-    setRodada(0);
-    setJogar(true);
+    const perguntas = pegarPerguntas(); // Pegar perguntas e embaralhar (primeira pergunta definida la mesmo)
 
-    setPerguntaAtual(listaFacil[0]); // primeira pergunta
+    if(!perguntas) return
+
+    console.log('Jogo começou');
+    setJogar(true);
 
   }
 
@@ -123,7 +192,7 @@ export default function ShowDoMilhao() {
       setNivel('dificil');
       setRodadaNivel(0);
     }
-  }, [rodada]);
+  }, [nivel, rodada, rodadaNivel]);
 
 
   useEffect(() => {
@@ -140,23 +209,44 @@ export default function ShowDoMilhao() {
         setPerguntaAtual(listaDificil[(rodadaNivel + pulos)]); // continua para proxima pergunta dificil
       }
     }
-  }, [rodadaNivel, pulos]);
+  }, [rodadaNivel, pulos, nivel]);
 
   //--------------
 
-  function verificarResposta(tentativa) {
+  /**
+   * @param {string} tentativa
+   * @param {string} tipo
+   */
+  function verificarResposta(tentativa, tipo) {
+    
+    if(tipo == 'extra') {
 
-    // Caso errar a resposta
-    if(tentativa != perguntaAtual.resposta) {
-      alert('Perdeu');
-      darPremio('errar');
-      return
+      if(tentativa != perguntaExtra.resposta) {
+        alert('Perdeu');
+        darPremio('errar-extra'); // erro-extra, perde tudo 'Perdeu tudo na pergunta extra'
+        return
+      }
+
+      setExtra(extra + 1);
+      setEtapaExtra(0);
+      alert('Parabéns. Prêmio dobrado!');
+
+    }
+    if(tipo == 'normal') {
+
+      // Caso errar a resposta
+      if(tentativa != perguntaAtual.resposta) {
+        alert('Perdeu');
+        darPremio('errar');
+        return
+      }
+
+      // Acertar resposta
+      setRodada((rodada + 1));
+      setRodadaNivel((rodadaNivel + 1));
+      setEtapa((etapa + 1));
     }
 
-    // Caso acertar a resposta
-    setRodada((rodada + 1));
-    setRodadaNivel((rodadaNivel + 1));
-    setEtapa((etapa + 1)); // Etapa que conta o valor que o usuario vai receber dependendo de sua ação
     setAjuda(true);
     corAlternativas([]);
     setMsgAjuda(''); // Limpar msg de ajuda
@@ -173,16 +263,23 @@ export default function ShowDoMilhao() {
       return // para a funcao usarCarta()
     }
 
+    if(cartas == 0) {
+      alert('Você está sem cartas. Pode comprar');
+      return
+    }
+
+    setCartas(cartas - 1); // Diminuir cartas disponíveis
+
     setAjuda(false); // para não poder usar a carta mais de uma vez na mesma pergunta
 
-    const cartas = [
+    const cartasInfo = [
       {c: 'rei', v: 0},
       {c: 'as', v: 1},
       {c: '2', v: 2},
       {c: '3', v: 3}
     ];
 
-    const el = cartas[Math.floor(Math.random() * cartas.length)]; // posicao aleatoria
+    const el = cartasInfo[Math.floor(Math.random() * cartasInfo.length)]; // posicao aleatoria
 
     const nomeCarta = el.c;
     const qtdErradas = el.v; // qtd alternativas erradas
@@ -227,10 +324,19 @@ export default function ShowDoMilhao() {
   function convidados(tipo) {
     if(!ajuda) {
       alert('Você pode pedir ajuda na próxima rodada.');
-      return // para a funcao usarCarta()
+      return
     }
 
     setAjuda(false); // para não poder usar a carta mais de uma vez na mesma pergunta
+
+    if(tipo == 'universitarios') {
+      if(universitarios == 0) return
+      setUniversitarios(universitarios - 1);
+    }
+    if(tipo == 'placas') {
+      if(placas == 0) return
+      setPlacas(placas - 1);
+    }
 
     let porcentagem = 100; // valor será tirado daqui e distribuido para as opcoes abaixo
     let a = 0;
@@ -239,9 +345,7 @@ export default function ShowDoMilhao() {
     let d = 0;
 
     for(let i = 1; i <= 4; i++) {
-      if(i == 4) {
-        d = porcentagem; // pegando a porcentagem restante;
-      }
+      if(i == 4) d = porcentagem; // pegando a porcentagem restante;
 
       const porcentagemAleatoria = Math.floor(Math.random() * porcentagem); // Numero aleatorio (min: 0, max: porcentagem restante)
       porcentagem = porcentagem - porcentagemAleatoria; // subtrai de porcentagem o numero aleatorio obtido acima
@@ -259,18 +363,72 @@ export default function ShowDoMilhao() {
 
   //--------------
 
-  function pular() {
-    if(pulos == 3) return
+  /**
+   * @param {string} tipo
+   */
+  function pular(tipo) {
+    if(tipo == 'normal') {
 
-    setPulos((pulos + 1));
+      if(pulos == 3) return
 
-    if((3 - pulos - 1) == 0) alert('Esse foi seu último pulo!');
+      setPulos((pulos + 1));
 
-    setAjuda(true); // Para garantir que carta estará disponível na próxima rodada. Mudar regra?
+      if((3 - pulos - 1) == 0) alert('Esse foi seu último pulo!');
+
+    }
+
+    if(tipo == 'extra') {
+
+      setEtapaExtra(0);
+      alert('Pergunta extra rejeitada ( :');
+
+    }
+
+    setAjuda(true); // Ajudas estarem disponíveis para próxima pergunta
     corAlternativas([]); // Todas as alternativas ficarem estilo padrão
     setMsgAjuda(''); // Limpar msg de ajuda
   }
 
+  //--------------
+
+  function comprarAjuda(tipo) {
+
+    //let certo = false;
+    let certo = ComprarAjuda(idUsuario, 3000);
+
+    if(tipo == 'cartas') {
+      //certo = ComprarAjuda(idUsuario, 4000);
+      if(!certo) {
+        alert("Você não tem saldo para esta compra");
+        return
+      }
+      setCartas(cartas + 1);
+
+    }
+
+    if(tipo == 'universitarios') {
+      //certo = ComprarAjuda(idUsuario, 2000);
+      if(!certo) {
+        alert("Você não tem saldo para esta compra");
+        return
+      }
+      setUniversitarios(universitarios + 1);
+
+    }
+
+    if(tipo == 'placas') {
+      //certo = ComprarAjuda(idUsuario, 2000);
+      if(!certo) {
+        alert("Você não tem saldo para esta compra");
+        return
+      }
+      setPlacas(placas + 1);
+
+    }
+
+    alert('Ajuda descontada na sua conta : )');
+
+  }
   //--------------
 
   function parar() { // Encerrar o jogo, resetando os dados do jogo
@@ -287,25 +445,48 @@ export default function ShowDoMilhao() {
   //--------------
 
   function darPremio(motivo) {
-    if(motivo == 'milhao') {
-      console.log('milhao');
-      console.log('Você ganhou o prêmio final');
-      depositar(1000000);
-    }
-
     if(motivo == 'errar') {
       const et = infoEtapa.find(e => e.etapa == etapa);
-      console.log('Você ganhou ' + et.errar);
-      depositar(et.errar);
+      if(et.errar == 0) {
+        alert(`Ganhou nada!`);
+      }
+      else {
+        alert(`Você ganhou ${et.errar}`);
+        depositar(et.errar);
+        salvarPontuacao(et.errar); // Salvar ranking do usuário
+      }
     }
 
     if(motivo == 'parar') {
       const et = infoEtapa.find(e => e.etapa == etapa);
-      console.log('Você ganhou ' + et.parar);
+      alert(`Você ganhou ${et.parar}`);
       depositar(et.parar);
+      salvarPontuacao(et.parar); // Salvar ranking do usuário
     }
 
-    encerrar();
+    if(motivo == 'errar-extra') {
+      alert(`Você errou a pergunta extra. Perdeu tudo`);
+      // Só isso mesmo :D
+    }
+
+    if(motivo == 'milhao') {
+      alert(`Você ganhou o prêmio final`);
+      depositar(1000000);
+      salvarPontuacao(1000000); // Salvar ranking do usuário
+    }
+
+    encerrar(); // resetar dados do jogo
+  }
+
+  //--------------
+
+  function salvarPontuacao(premio) {
+    const seSuperou = salvarPontuacaoRanking(idUsuario, etapa, (premio * extra));
+
+    if(seSuperou) { // Significa que teve alterações na lista de pontuação
+      alert("Você superou seu resultado anterior!");
+      setPontuacoes(getRanking); // atualizar o state
+    }
   }
 
   //--------------
@@ -313,7 +494,8 @@ export default function ShowDoMilhao() {
   function encerrar() { // Encerrar o jogo, resetando os dados do jogo
     setJogar(false);
     setIdUsuario('');
-    setPerguntaAtual({});
+    setPerguntaAtual(formatoPergunta);
+    setPerguntaExtra(formatoPergunta);
     setRodada(0);
     setRodadaNivel(0);
     setNivel('facil');
@@ -323,13 +505,16 @@ export default function ShowDoMilhao() {
 
   //--------------
 
+  /**
+   * @param {number} valor
+   */
   function depositar(valor) { // listaUsuarios, setListaUsuarios
     
     const novaLista = [];
 
     listaUsuarios.forEach(u => {
       if(u.id == idUsuario) {
-        u.saldo = u.saldo + valor;
+        u.saldo = u.saldo + (valor * extra); // extra pode ser 1 ou 2
       }
       novaLista.push(u);
     });
@@ -337,12 +522,12 @@ export default function ShowDoMilhao() {
     setListaUsuarios(novaLista);
     localStorage.setItem('listaCliente', JSON.stringify(novaLista));
 
-    const valorFormatado = parseFloat(valor).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+    const valorFormatado = (valor * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
 
     // Salvar transação
     const transacao = {
       tipo: 'D',
-      valor: valor,
+      valor: valor * extra, // extra pode ser 1 ou 2
       data: new Date(),
       descricao: `Ganhou ${valorFormatado} no jogo do Milhao`
     };
@@ -355,56 +540,80 @@ export default function ShowDoMilhao() {
     <>
       <Menu />
 
-      <div className='col-lg-4'>
-        <div className="my-3 p-3 bg-body rounded shadow-sm">
-            <h6 className="border-bottom pb-2 mb-2">Show do Milhão</h6>
+      {/* Iniciar jogo */}
+      <div className="superior">
 
-            {!jogar && // opções para selecionar se jogo não setiver sendo jogado (false)
-              <select className="form-select" onChange={(e) => setIdUsuario(e.target.value)}>
-                <option key="-" value="">Selecione o usuário</option>
-                {listaUsuarios.map(u => {
-                  return <option key={u.id} value={u.id}>{u.nome}</option>
+        {/************* Usuário, Categorias e Iniciar partida *************/}
+        <div className='col-lg-4'>
+          <div className="my-3 p-3 bg-body rounded shadow-sm">
+              <h6 className="border-bottom pb-2 mb-2">Show do Milhão</h6>
+
+              {!jogar && // opções para selecionar se jogo não setiver sendo jogado (false)
+                <select className="form-select" onChange={(e) => setIdUsuario(e.target.value)}>
+                  <option key="-" value="">Selecione o usuário</option>
+                  {listaUsuarios.map(u => {
+                    return <option key={u.id} value={u.id}>{u.nome}</option>
+                  })}
+                </select>
+              }
+
+              <br />
+
+              <div className="categorias">
+                {infoCategorias.map(categoria => {
+                  //
+                  return (
+                    <div key={`div-${categoria}`} className="categoria-opcao">
+                      <label htmlFor={categoria}>{categoria}</label>
+                      <input 
+                        key={categoria}
+                        name={categoria}
+                        type="checkbox"
+                        value={categoria}
+                        onChange={(e) => changeCategorias(e.target.checked, categoria)}
+                      />
+                    </div>
+                  )
                 })}
-              </select>
-            }
+              </div>
+              
+              <br /> 
 
-            <br />
+              {!jogar && (
+                <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
+                  Iniciar jogo
+                </Button>
+              )}
 
-            {!jogar && (
-              <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
-                Iniciar jogo
-              </Button>
-            )}
-
-            <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
-              Iniciar jogo
-            </Button>
-
+          </div>
         </div>
+
+        {/************* Usuário, Categorias e Iniciar partida *************/}
+        <div className='col-lg-4'>
+          <div className="my-3 p-3 bg-body rounded shadow-sm">
+
+            <h6 className="border-bottom pb-2 mb-2">Ranking</h6>
+
+            <table className="tabela-pontuacoes">
+              <tbody>
+                <tr className="topo">
+                  <th className="table-th">Jogador</th>
+                  <th className="table-th">Etapa</th>
+                  <th className="table-th">Prêmio</th>
+                </tr>
+                {pontuacoes.map(p => {
+                  return (
+                    <LinhaPontuacao key={`pontuacao-${p.idUsuario}`} nome={p.nome} etapa={p.etapa} premio={p.premio} />
+                  )
+                })}
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+
       </div>
 
-
-      <br />
-
-      <div>
-        <h4>Perguntas fáceis</h4>
-        {listaFacil.map(p => {
-          return <div key={p.titulo}>{p.titulo}</div>
-        })}
-        <br />
-
-        <h4>Perguntas intermediárias</h4>
-        {listaMedio.map(p => {
-          return <div key={p.titulo}>{p.titulo}</div>
-        })}
-        <br />
-
-        <h4>Perguntas difíceis</h4>
-        {listaDificil.map(p => {
-          return <div key={p.titulo}>{p.titulo}</div>
-        })}
-        <br />
-      </div>
 
       <br />
 
@@ -415,29 +624,72 @@ export default function ShowDoMilhao() {
           <div className='interface'>
 
             <div className="cima">
-              <div className="pergunta">{etapa}. {perguntaAtual.titulo}</div>
+              {etapaExtra != etapa? (
+                <div className="pergunta">{etapa}. {perguntaAtual.titulo}</div> // Pergunta normal
+              ) : (
+                <div className="pergunta">Extra. {perguntaExtra.titulo}</div> // Pergunta extra
+              )}
               <button className="parar" onClick={() => parar()}>Parar</button>
             </div>
 
             <div className="meio">
               <div className="alternativas">
-                {perguntaAtual.alternativas.map(item => {
-                  //
-                  return (
-                    <button id={item.alt} className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt)}>{`(${item.alt})`} {item.valor}</button>
-                  )
-                })}
+                {etapaExtra != etapa? ( // rodada normal
+                  <>
+                    {perguntaAtual.alternativas.map(item => { // botao que verifica resposta (rodada normal)
+                      return <button className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'normal')}>{`(${item.alt})`} {item.valor}</button>
+                    })}
+                  </>
+                ) : ( // etapa extra
+                  <>
+                    {perguntaExtra.alternativas.map(item => { // botao que verifica resposta da rodada extra (parametro)
+                      return <button className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'extra')}>{`(${item.alt})`} {item.valor}</button>
+                    })}
+                  </>
+                )}
               </div>
+
               <div className="ajudas">
                 <div className="ajudas-cima">
-                  <button className="cartas" onClick={() => usarCarta()}>Cartas</button>
-                  <button className="universitarios" onClick={() => convidados('universitarios')}>Universitários</button>
-                  <button className="placas" onClick={() => convidados('placas')}>Placas</button>
+
+                  {cartas > 0 ? (
+                    <button className="cartas" onClick={() => usarCarta()}>Cartas</button>
+                  ) : (
+                    <button className="comprar-cartas" onClick={() => comprarAjuda('cartas')}>
+                      <p className="comprar-ajuda-texto">Comprar cartas</p>
+                      <p className="comprar-ajuda-preco">R$ 3000</p>
+                    </button>
+                  )}
+
+                  {universitarios > 0 ? (
+                    <button className="universitarios" onClick={() => convidados('universitarios')}>Universitários</button>
+                  ) : (
+                    <button className="comprar-universitarios" onClick={() => comprarAjuda('universitarios')}>
+                      <p className="comprar-ajuda-texto">Comprar universitarios</p>
+                      <p className="comprar-ajuda-preco">R$ 3000</p>
+                    </button>
+                  )}
+
+                  {placas > 0 ? (
+                    <button className="placas" onClick={() => convidados('placas')}>Placas</button>
+                  ) : (
+                    <button className="comprar-placas" onClick={() => comprarAjuda('placas')}>
+                      <p className="comprar-ajuda-texto">Comprar placas</p>
+                      <p className="comprar-ajuda-preco">R$ 3000</p>
+                    </button>
+                  )}
+
                 </div>
                 <div className="pulos">
-                  {pulos == 0? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
-                  {pulos <= 1? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
-                  {pulos <= 2? <button className="pular-btn" onClick={() => pular()}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                  {etapa != etapaExtra ? (
+                    <>
+                      {pulos == 0? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                      {pulos <= 1? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                      {pulos <= 2? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                    </>
+                  ) : (
+                    <button className="pular-btn" onClick={() => pular('extra')}>Pular</button>
+                  )}
                 </div>
               </div>
             </div>
@@ -445,9 +697,19 @@ export default function ShowDoMilhao() {
             <div className="msg">{msgAjuda}</div>
 
             <div className="baixo">
-              <i>Errar: {infoEtapa[(etapa - 1)].errar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
-              <i>Parar: {infoEtapa[(etapa - 1)].parar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
-              <i>Acertar: {infoEtapa[(etapa - 1)].acertar.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+              {etapa != etapaExtra ? (
+                <>
+                  {infoEtapa[(etapa - 1)] && (
+                    <>
+                      <i>Errar: {(infoEtapa[(etapa - 1)].errar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                      <i>Parar: {(infoEtapa[(etapa - 1)].parar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                      <i>Acertar: {(infoEtapa[(etapa - 1)].acertar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                    </>
+                  )}
+                </>
+              ) : (
+                <i>Dobre seu prêmio caso acerte a pergunta. É opcional respondê-la.</i>
+              )}
             </div>
 
           </div>
@@ -456,6 +718,12 @@ export default function ShowDoMilhao() {
           <>{(idUsuario != '') && <div>Clique em Iniciar jogo : {')'}</div>}</>
         )}
       </div>
+
+
+      <br />
+
+
+
 
       <br />
     </>
@@ -469,5 +737,14 @@ export default function ShowDoMilhao() {
   alternativas: [{alt: '', valor: ''},{alt: '', valor: ''}, {alt: '', valor: ''}, {alt: '', valor: ''}],
   resposta: '',
   nivel: ''
+}
+*/
+
+/*
+{
+  idUsuario: '',
+  nome: '',
+  etapa: 5,
+  prêmio: 1000000
 }
 */
