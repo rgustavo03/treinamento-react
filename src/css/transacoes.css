@@ -1,0 +1,10 @@
+
+.data-transacoes {
+  margin-bottom: 30px;
+}
+
+.transacao {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px;
+}

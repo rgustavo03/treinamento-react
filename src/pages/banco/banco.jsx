@@ -8,14 +8,19 @@ import Input from '../../componentes/input';
 import Button from '../../componentes/button';
 import Select from '../../componentes/select'
 import Header from '../../componentes/header';
-import EmptyState from '../../componentes/emptyState';
 
-import Table from './table';
 import Menu from '../../componentes/menu';
 import { getTransacoes, salvarTransacoesLocalStorage } from "../../service/transacoes";
+import { ShowTransacoes } from "./showTransacoes";
 
 
 export default function Banco() {
+
+  const formatoUsuario = {
+    id: '',
+    nome: '',
+    saldo: 0
+  };
 
   const [listaUsuarios, setListaUsuarios] = useState(bancoService());
 
@@ -23,13 +28,17 @@ export default function Banco() {
     setListaUsuarios(bancoService());
   }, []);
 
-  //----------------------
-
-  const [usuario, setUsuario] = useState();
-
-  const [usuarioDestino, setUsuarioDestino] = useState();
 
   //----------------------
+
+
+  const [usuario, setUsuario] = useState(formatoUsuario);
+
+  const [usuarioDestino, setUsuarioDestino] = useState(formatoUsuario);
+
+
+  //----------------------
+
 
   function escolherUsuario(e) {
     listaUsuarios.forEach(u => {
@@ -43,7 +52,25 @@ export default function Banco() {
     });
   }
 
+
   //----------------------
+
+
+  const formatoTransacao = { data: '', descricao: '', tipo: '', valor: 0 };
+
+  const [transacoes, setTransacoes] = useState([formatoTransacao]); // lista de transacoes do usuario (definido no useEffect abaixo)
+
+  useEffect(() => { // buscar transacoes do usuario no localStorage
+
+    if(usuario.id.length != 0) return
+    const transacoesUsuario = getTransacoes(usuario.id); // funcao que retorna transacoes (transacoes.js)
+    setTransacoes(transacoesUsuario);
+
+  }, [usuario]);
+
+
+  //-----------------
+
 
   const tiposTransacao = [
     { label: 'Saque', value: 'S' },
@@ -51,17 +78,12 @@ export default function Banco() {
     { label: 'Transferência', value: 'T' }
   ];
 
-  const [transacoes, setTransacoes] = useState([]);
   const [tipoTransacao, setTipoTransacao] = useState('');
   const [valor, setValor] = useState('');
 
-  useEffect(() => { // buscar transacoes do usuario no localStorage
-    if(!usuario) return
-    const transacoesUsuario = getTransacoes(usuario.id); // funcao que retorna transacoes (transacoes.js)
-    setTransacoes(transacoesUsuario);
-  }, [usuario]);
 
-  //----------------------
+  //-----------------
+
 
   function Transacionar(tipo, valorTransacao, descricaoTransacao) {
 
@@ -131,7 +153,9 @@ export default function Banco() {
     setTransacoes([...transacoes, dados]);
   }
 
+
   //-----------------
+
 
   function Sacar(conta, valor) {
     if((conta.saldo - valor) < 0) {
@@ -144,13 +168,17 @@ export default function Banco() {
     }
   }
 
+
   //-----------------
+
 
   function Depositar(conta, valor) {
     conta.saldo = conta.saldo + valor;
   }
 
+
   //-----------------
+
 
   function MovimentarConta() {
     if(!usuario) {
@@ -173,7 +201,9 @@ export default function Banco() {
     Transacionar(tipoTransacao, valor, descricao);
   }
 
+
   //-----------------
+
 
   function Cancelar() {
     setTipoTransacao('');
@@ -296,15 +326,8 @@ export default function Banco() {
             </div>
 
 
-            <div className='col-lg-8'>
-              <div className="my-3 p-3 bg-body rounded shadow-sm">
-                {transacoes.length > 0 && <>
-                  <Table lista={transacoes} />
-                </>}
+            <ShowTransacoes usuario={usuario} alteracaoTransacoes={transacoes} />
 
-                {transacoes.length == 0 && <EmptyState mensagem="Nenhuma transação realizada" icone="fa-solid fa-money-bill-transfer" />}
-              </div>
-            </div>
 
           </div>
         </div>

@@ -9,6 +9,8 @@ import "../../css/jogo.css";
 import { ComprarAjuda } from "../../service/compraAjuda";
 import { getRanking, salvarPontuacaoRanking } from "../../service/ranking";
 import LinhaPontuacao from "./linhaPontuacao";
+import { Link } from "react-router-dom";
+import TreinamentoMilhao from "./treinamento";
 
 export default function ShowDoMilhao() {
 
@@ -28,6 +30,7 @@ export default function ShowDoMilhao() {
   //--------------
 
   const [jogar, setJogar] = useState(false); // toggle button
+  const [treinar, setTreinar] = useState(false); // toggle button
 
   const [listaFacil, setListaFacil] = useState([{}]); // perguntas nivel facil
   const [listaMedio, setListaMedio] = useState([{}]); // lista perguntas nivel medio
@@ -167,6 +170,11 @@ export default function ShowDoMilhao() {
 
   function iniciar() {
 
+    if(idUsuario.length == 0) {
+      alert("Selecione um usuário");
+      return
+    }
+
     if(categorias.length < 4) {
       alert("Selecione pelo menos três categorias");
       return
@@ -218,30 +226,26 @@ export default function ShowDoMilhao() {
    * @param {string} tipo
    */
   function verificarResposta(tentativa, tipo) {
-    
     if(tipo == 'extra') {
-
       if(tentativa != perguntaExtra.resposta) {
         alert('Perdeu');
         darPremio('errar-extra'); // erro-extra, perde tudo 'Perdeu tudo na pergunta extra'
         return
       }
-
       setExtra(extra + 1);
       setEtapaExtra(0);
       alert('Parabéns. Prêmio dobrado!');
-
     }
-    if(tipo == 'normal') {
 
+    if(tipo == 'normal') {
       // Caso errar a resposta
       if(tentativa != perguntaAtual.resposta) {
         alert('Perdeu');
         darPremio('errar');
         return
       }
-
       // Acertar resposta
+      alert('Acertou');
       setRodada((rodada + 1));
       setRodadaNivel((rodadaNivel + 1));
       setEtapa((etapa + 1));
@@ -250,7 +254,6 @@ export default function ShowDoMilhao() {
     setAjuda(true);
     corAlternativas([]);
     setMsgAjuda(''); // Limpar msg de ajuda
-
   }
 
   //--------------
@@ -368,20 +371,16 @@ export default function ShowDoMilhao() {
    */
   function pular(tipo) {
     if(tipo == 'normal') {
-
       if(pulos == 3) return
 
       setPulos((pulos + 1));
 
       if((3 - pulos - 1) == 0) alert('Esse foi seu último pulo!');
-
     }
 
     if(tipo == 'extra') {
-
       setEtapaExtra(0);
       alert('Pergunta extra rejeitada ( :');
-
     }
 
     setAjuda(true); // Ajudas estarem disponíveis para próxima pergunta
@@ -442,6 +441,11 @@ export default function ShowDoMilhao() {
     darPremio('parar');
   }
 
+
+  useEffect(() => {
+    if(!treinar) setIdUsuario('');
+  }, [treinar]);
+
   //--------------
 
   function darPremio(motivo) {
@@ -494,6 +498,7 @@ export default function ShowDoMilhao() {
   function encerrar() { // Encerrar o jogo, resetando os dados do jogo
     setJogar(false);
     setIdUsuario('');
+    setCategorias([""]);
     setPerguntaAtual(formatoPergunta);
     setPerguntaExtra(formatoPergunta);
     setRodada(0);
@@ -540,192 +545,214 @@ export default function ShowDoMilhao() {
     <>
       <Menu />
 
-      {/* Iniciar jogo */}
-      <div className="superior">
-
-        {/************* Usuário, Categorias e Iniciar partida *************/}
-        <div className='col-lg-4'>
-          <div className="my-3 p-3 bg-body rounded shadow-sm">
-              <h6 className="border-bottom pb-2 mb-2">Show do Milhão</h6>
-
-              {!jogar && // opções para selecionar se jogo não setiver sendo jogado (false)
-                <select className="form-select" onChange={(e) => setIdUsuario(e.target.value)}>
-                  <option key="-" value="">Selecione o usuário</option>
-                  {listaUsuarios.map(u => {
-                    return <option key={u.id} value={u.id}>{u.nome}</option>
-                  })}
-                </select>
-              }
-
-              <br />
-
-              <div className="categorias">
-                {infoCategorias.map(categoria => {
-                  //
-                  return (
-                    <div key={`div-${categoria}`} className="categoria-opcao">
-                      <label htmlFor={categoria}>{categoria}</label>
-                      <input 
-                        key={categoria}
-                        name={categoria}
-                        type="checkbox"
-                        value={categoria}
-                        onChange={(e) => changeCategorias(e.target.checked, categoria)}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-              
-              <br /> 
-
-              {!jogar && (
-                <Button onClick={iniciar} nome="" tipoBotao="" tamanho="" disabled={(idUsuario != '')? '' : 'true'}>
-                  Iniciar jogo
-                </Button>
-              )}
-
-          </div>
-        </div>
-
-        {/************* Usuário, Categorias e Iniciar partida *************/}
-        <div className='col-lg-4'>
-          <div className="my-3 p-3 bg-body rounded shadow-sm">
-
-            <h6 className="border-bottom pb-2 mb-2">Ranking</h6>
-
-            <table className="tabela-pontuacoes">
-              <tbody>
-                <tr className="topo">
-                  <th className="table-th">Jogador</th>
-                  <th className="table-th">Etapa</th>
-                  <th className="table-th">Prêmio</th>
-                </tr>
-                {pontuacoes.map(p => {
-                  return (
-                    <LinhaPontuacao key={`pontuacao-${p.idUsuario}`} nome={p.nome} etapa={p.etapa} premio={p.premio} />
-                  )
-                })}
-              </tbody>
-            </table>
-
-          </div>
-        </div>
-
-      </div>
-
 
       <br />
 
 
       <div className="area-jogo">
-        {jogar? (
+        
+        <div className='interface'>
 
-          <div className='interface'>
 
-            <div className="cima">
-              {etapaExtra != etapa? (
-                <div className="pergunta">{etapa}. {perguntaAtual.titulo}</div> // Pergunta normal
-              ) : (
-                <div className="pergunta">Extra. {perguntaExtra.titulo}</div> // Pergunta extra
-              )}
-              <button className="parar" onClick={() => parar()}>Parar</button>
+
+        {(!jogar && !treinar) && (
+          <i className="logo"></i>
+        )}
+
+
+
+
+          {/* Iniciar jogo */}
+          {(!jogar && !treinar) && (
+            <div className="inicio">
+
+              {/************* Usuário e Categorias e Iniciar (Partida / Treinamento) *************/}
+              <div className="col-lg-4">
+                <div className="my-3 p-3 bg-body rounded shadow-sm">
+                    <h6 className="border-bottom pb-2 mb-2">Show do Milhão</h6>
+
+                    <select className="form-select" onChange={(e) => setIdUsuario(e.target.value)}>
+                      <option key="-" value="">Selecione o usuário</option>
+                      {listaUsuarios.map(u => {
+                        return <option key={u.id} value={u.id}>{u.nome}</option>
+                      })}
+                    </select>              
+
+                    <br />
+
+                    <div className="categorias">
+                      {infoCategorias.map(categoria => {
+                        //
+                        return (
+                          <div key={`div-${categoria}`} className="categoria-opcao">
+                            <label htmlFor={categoria}>{categoria}</label>
+                            <input 
+                              key={categoria}
+                              name={categoria}
+                              type="checkbox"
+                              value={categoria}
+                              onChange={(e) => changeCategorias(e.target.checked, categoria)}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                </div>
+
+
+                <div className="left-btn">
+
+                  {!jogar && <button onClick={iniciar} className="iniciar-btn">Iniciar jogo</button> }
+
+                  <button onClick={() => setTreinar(true)} className="treinamento-btn">Treinamento</button>
+
+                </div>
+
+              </div>
+
+              {/************* Pontuações *************/}
+              <div className="col-lg-4">
+                <div className="my-3 p-3 bg-body rounded shadow-sm">
+
+                  <h6 className="border-bottom pb-2 mb-2">Ranking</h6>
+
+                  <table className="tabela-pontuacoes">
+                    <tbody>
+                      <tr className="topo">
+                        <th className="table-th">Jogador</th>
+                        <th className="table-th">Etapa</th>
+                        <th className="table-th">Prêmio</th>
+                      </tr>
+                      {pontuacoes.map(p => {
+                        return (
+                          <LinhaPontuacao key={`pontuacao-${p.idUsuario}`} nome={p.nome} etapa={p.etapa} premio={p.premio} />
+                        )
+                      })}
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+
             </div>
+          )}
 
-            <div className="meio">
-              <div className="alternativas">
-                {etapaExtra != etapa? ( // rodada normal
+
+
+
+          {jogar && (
+            <>
+              <div className="cima">
+                {etapaExtra != etapa? (
+                  <div className="pergunta">{etapa}. {perguntaAtual.titulo}</div> // Pergunta normal
+                ) : (
+                  <div className="pergunta">Extra. {perguntaExtra.titulo}</div> // Pergunta extra
+                )}
+                <button className="parar" onClick={() => parar()}>Parar</button>
+              </div>
+
+              <div className="meio">
+                <div className="alternativas">
+                  {etapaExtra != etapa? ( // rodada normal
+                    <>
+                      {perguntaAtual.alternativas.map(item => { // botao que verifica resposta (rodada normal)
+                        return <button id={item.alt} className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'normal')}>{`(${item.alt})`} {item.valor}</button>
+                      })}
+                    </>
+                  ) : ( // etapa extra
+                    <>
+                      {perguntaExtra.alternativas.map(item => { // botao que verifica resposta da rodada extra (parametro)
+                        return <button id={item.alt} className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'extra')}>{`(${item.alt})`} {item.valor}</button>
+                      })}
+                    </>
+                  )}
+                </div>
+
+                <div className="ajudas">
+                  <div className="ajudas-cima">
+
+                    {cartas > 0 ? (
+                      <button className="cartas" onClick={() => usarCarta()}>Cartas</button>
+                    ) : (
+                      <button className="comprar-cartas" onClick={() => comprarAjuda('cartas')}>
+                        <p className="comprar-ajuda-texto">Comprar cartas</p>
+                        <p className="comprar-ajuda-preco">R$ 3000</p>
+                      </button>
+                    )}
+
+                    {universitarios > 0 ? (
+                      <button className="universitarios" onClick={() => convidados('universitarios')}>Universitários</button>
+                    ) : (
+                      <button className="comprar-universitarios" onClick={() => comprarAjuda('universitarios')}>
+                        <p className="comprar-ajuda-texto">Comprar universitarios</p>
+                        <p className="comprar-ajuda-preco">R$ 3000</p>
+                      </button>
+                    )}
+
+                    {placas > 0 ? (
+                      <button className="placas" onClick={() => convidados('placas')}>Placas</button>
+                    ) : (
+                      <button className="comprar-placas" onClick={() => comprarAjuda('placas')}>
+                        <p className="comprar-ajuda-texto">Comprar placas</p>
+                        <p className="comprar-ajuda-preco">R$ 3000</p>
+                      </button>
+                    )}
+
+                  </div>
+                  <div className="pulos">
+                    {etapa != etapaExtra ? (
+                      <>
+                        {pulos == 0? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                        {pulos <= 1? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                        {pulos <= 2? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
+                      </>
+                    ) : (
+                      <button className="pular-btn" onClick={() => pular('extra')}>Pular</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="msg">{msgAjuda}</div>
+
+              <div className="baixo">
+                {etapa != etapaExtra ? (
                   <>
-                    {perguntaAtual.alternativas.map(item => { // botao que verifica resposta (rodada normal)
-                      return <button className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'normal')}>{`(${item.alt})`} {item.valor}</button>
-                    })}
+                    {infoEtapa[(etapa - 1)] && (
+                      <>
+                        <i>Errar: {(infoEtapa[(etapa - 1)].errar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                        <i>Parar: {(infoEtapa[(etapa - 1)].parar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                        <i>Acertar: {(infoEtapa[(etapa - 1)].acertar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
+                      </>
+                    )}
                   </>
-                ) : ( // etapa extra
-                  <>
-                    {perguntaExtra.alternativas.map(item => { // botao que verifica resposta da rodada extra (parametro)
-                      return <button className="alt-button" key={item.alt} onClick={() => verificarResposta(item.alt, 'extra')}>{`(${item.alt})`} {item.valor}</button>
-                    })}
-                  </>
+                ) : ( // Quando for a pergunta secreta
+                  <i>Dobre seu prêmio caso acerte a pergunta. É opcional respondê-la.</i>
                 )}
               </div>
+            </>
+          )}
 
-              <div className="ajudas">
-                <div className="ajudas-cima">
 
-                  {cartas > 0 ? (
-                    <button className="cartas" onClick={() => usarCarta()}>Cartas</button>
-                  ) : (
-                    <button className="comprar-cartas" onClick={() => comprarAjuda('cartas')}>
-                      <p className="comprar-ajuda-texto">Comprar cartas</p>
-                      <p className="comprar-ajuda-preco">R$ 3000</p>
-                    </button>
-                  )}
 
-                  {universitarios > 0 ? (
-                    <button className="universitarios" onClick={() => convidados('universitarios')}>Universitários</button>
-                  ) : (
-                    <button className="comprar-universitarios" onClick={() => comprarAjuda('universitarios')}>
-                      <p className="comprar-ajuda-texto">Comprar universitarios</p>
-                      <p className="comprar-ajuda-preco">R$ 3000</p>
-                    </button>
-                  )}
 
-                  {placas > 0 ? (
-                    <button className="placas" onClick={() => convidados('placas')}>Placas</button>
-                  ) : (
-                    <button className="comprar-placas" onClick={() => comprarAjuda('placas')}>
-                      <p className="comprar-ajuda-texto">Comprar placas</p>
-                      <p className="comprar-ajuda-preco">R$ 3000</p>
-                    </button>
-                  )}
+          <TreinamentoMilhao
+            treinar={treinar}
+            setTreinar={setTreinar}
+            categorias={categorias}
+            setCategorias={setCategorias}
+          />
 
-                </div>
-                <div className="pulos">
-                  {etapa != etapaExtra ? (
-                    <>
-                      {pulos == 0? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
-                      {pulos <= 1? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
-                      {pulos <= 2? <button className="pular-btn" onClick={() => pular('normal')}>Pular</button> : <button className="pular-btn" disabled>Pular</button>}
-                    </>
-                  ) : (
-                    <button className="pular-btn" onClick={() => pular('extra')}>Pular</button>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            <div className="msg">{msgAjuda}</div>
 
-            <div className="baixo">
-              {etapa != etapaExtra ? (
-                <>
-                  {infoEtapa[(etapa - 1)] && (
-                    <>
-                      <i>Errar: {(infoEtapa[(etapa - 1)].errar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
-                      <i>Parar: {(infoEtapa[(etapa - 1)].parar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
-                      <i>Acertar: {(infoEtapa[(etapa - 1)].acertar * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</i>
-                    </>
-                  )}
-                </>
-              ) : (
-                <i>Dobre seu prêmio caso acerte a pergunta. É opcional respondê-la.</i>
-              )}
-            </div>
 
-          </div>
+        </div>
 
-        ) : (
-          <>{(idUsuario != '') && <div>Clique em Iniciar jogo : {')'}</div>}</>
-        )}
       </div>
 
 
       <br />
 
-
-
-
-      <br />
     </>
   )
 }
