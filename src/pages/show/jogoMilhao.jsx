@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Menu from "../../componentes/menu";
-import { getPerguntas } from "../../service/perguntas";
+import { perguntasEmbaralhadas } from "../../service/perguntas";
 import { inicializar } from "../../service/cliente";
 import { salvarTransacoesLocalStorage } from "../../service/transacoes";
-import Button from "../../componentes/button";
 
 import "../../css/jogo.css";
 import { ComprarAjuda } from "../../service/compraAjuda";
 import { getRanking, salvarPontuacaoRanking } from "../../service/ranking";
 import LinhaPontuacao from "./linhaPontuacao";
-import { Link } from "react-router-dom";
 import TreinamentoMilhao from "./treinamento";
+import { getMsgAjuda } from "../../service/msgAjuda";
+import { depositarPremio } from "../../service/depositarPremio";
 
 export default function ShowDoMilhao() {
 
@@ -32,9 +32,9 @@ export default function ShowDoMilhao() {
   const [jogar, setJogar] = useState(false); // toggle button
   const [treinar, setTreinar] = useState(false); // toggle button
 
-  const [listaFacil, setListaFacil] = useState([{}]); // perguntas nivel facil
-  const [listaMedio, setListaMedio] = useState([{}]); // lista perguntas nivel medio
-  const [listaDificil, setListaDificil] = useState([{}]); // lista perguntas nivek dificil
+  const [listaFacil, setListaFacil] = useState([formatoPergunta]); // perguntas nivel facil
+  const [listaMedio, setListaMedio] = useState([formatoPergunta]); // lista perguntas nivel medio
+  const [listaDificil, setListaDificil] = useState([formatoPergunta]); // lista perguntas nivek dificil
 
   const infoCategorias = ["geral", "geografia", "matematica", "ciencias", "historia"];
 
@@ -82,8 +82,14 @@ export default function ShowDoMilhao() {
 
   const [msgAjuda, setMsgAjuda] = useState('');
 
+
   //--------------
 
+
+  /**
+   * @param {boolean} checked
+   * @param {string} valor
+   */
   function changeCategorias(checked, valor) {
 
     const incluiValor = categorias.includes(valor);
@@ -104,49 +110,28 @@ export default function ShowDoMilhao() {
     }
   }
 
+
   //--------------
 
-  function pegarPerguntas() {
 
-    let lista = getPerguntas();
-    const novaLista = []; // recebera perguntas aleatoriamente
+  function organizarPerguntas() {
+
+    const lista = perguntasEmbaralhadas(categorias); // lista embaralhada - receberá perguntas embaralhadas
 
     const perguntasFaceis = [];
     const perguntasMedianas = [];
     const perguntasDificeis = [];
 
-    const indexRandom = Math.floor(Math.random() * (infoEtapa.length - 1));
+    const indexRandom = Math.floor(Math.random() * (infoEtapa.length - 1)); // index (etapa) aleatorio onde pergunta extra aparece
+    setEtapaExtra(indexRandom); // setar index (etapa) no state (que é verificado no decorrer do jogo)
 
-    setEtapaExtra(indexRandom);
-
-    //******* WHILE -- Embaralhar perguntas, permanecer as que forem das categorias selecionadas
-    while(lista.length > 0) {
-      const perg = lista[Math.floor(Math.random() * lista.length)]; // posicao aleatoria // (lista.length - 1) ?
-
-      novaLista.push(perg); // adiociona pergunta aleatoria em novaLista
-
-      const listaAlterada = []; // essa aqui substituirá a lista com seus dados que recebera no forEach abaixo
-
-      lista.forEach(p => { // Eliminar itens da lista
-
-        if(p.titulo == perg.titulo) return // elimina pergunta já adicionada (diminuir lista até sobrar nada)
-        if(!(categorias.includes(p.categoria))) return // elimina pergunta caso categoria não esta incluida
-        listaAlterada.push(p); // recebe uma nova pergunta com as condicoes acima
-
-      });
-
-      lista = listaAlterada; // lista agora e uma lista sem o elemento que foi adicionado
-    }
-    //*******
-
-    novaLista.forEach(p => { // separa as peguntas por nivel e coloca em cada lista, separa pergunta extra
-      // Separar pergunta extra
+    lista.forEach(p => { // separa as peguntas por nivel e coloca em cada lista, separa pergunta extra
+      // Separar pergunta extra (de acordo com nível)
       if(perguntaExtra.titulo.length == 0) {
         if(indexRandom < 10 && p.nivel == 'facil') setPerguntaExtra(p);
         if(indexRandom >= 10 && indexRandom < 14 && p.nivel == 'medio') setPerguntaExtra(p);
         if(indexRandom >= 14 && p.nivel == 'dificil') setPerguntaExtra(p);
       }
-
       // Separar perguntas por nível
       if(p.nivel == 'facil') perguntasFaceis.push(p);
       if(p.nivel == 'medio') perguntasMedianas.push(p);
@@ -166,7 +151,9 @@ export default function ShowDoMilhao() {
     return true
   }
 
+
   //--------------
+
 
   function iniciar() {
 
@@ -180,7 +167,7 @@ export default function ShowDoMilhao() {
       return
     }
 
-    const perguntas = pegarPerguntas(); // Pegar perguntas e embaralhar (primeira pergunta definida la mesmo)
+    const perguntas = organizarPerguntas(); // Pegar perguntas e embaralhar (primeira pergunta definida la mesmo)
 
     if(!perguntas) return
 
@@ -189,7 +176,9 @@ export default function ShowDoMilhao() {
 
   }
 
+
   //--------------
+
 
   useEffect(() => {
     if((rodadaNivel) == 10 && nivel == 'facil') {
@@ -200,7 +189,7 @@ export default function ShowDoMilhao() {
       setNivel('dificil');
       setRodadaNivel(0);
     }
-  }, [nivel, rodada, rodadaNivel]);
+  }, [rodada, rodadaNivel]);
 
 
   useEffect(() => {
@@ -209,7 +198,7 @@ export default function ShowDoMilhao() {
     if(nivel == 'medio') setPerguntaAtual(listaMedio[(rodadaNivel + pulos)]);
 
     if(nivel == 'dificil') {
-      if(rodadaNivel == 2) { // rodadaNivel conta para proxima, mas aparecerá mensagem e parará o jogo
+      if(rodadaNivel > 1) { // rodadaNivel conta para proxima, mas aparecerá mensagem e parará o jogo
         alert('Você venceu o show do Milhão');
         darPremio('milhao');
       }
@@ -219,14 +208,16 @@ export default function ShowDoMilhao() {
     }
   }, [rodadaNivel, pulos, nivel]);
 
+
   //--------------
+
 
   /**
    * @param {string} tentativa
    * @param {string} tipo
    */
   function verificarResposta(tentativa, tipo) {
-    if(tipo == 'extra') {
+    if(tipo == 'extra') { // PERGUNTA EXTRA
       if(tentativa != perguntaExtra.resposta) {
         alert('Perdeu');
         darPremio('errar-extra'); // erro-extra, perde tudo 'Perdeu tudo na pergunta extra'
@@ -237,7 +228,7 @@ export default function ShowDoMilhao() {
       alert('Parabéns. Prêmio dobrado!');
     }
 
-    if(tipo == 'normal') {
+    if(tipo == 'normal') { // PERGUNTA NORMAL
       // Caso errar a resposta
       if(tentativa != perguntaAtual.resposta) {
         alert('Perdeu');
@@ -245,7 +236,7 @@ export default function ShowDoMilhao() {
         return
       }
       // Acertar resposta
-      alert('Acertou');
+      alert('Acertou'); // Aparecer mensagem ou sei lá.
       setRodada((rodada + 1));
       setRodadaNivel((rodadaNivel + 1));
       setEtapa((etapa + 1));
@@ -256,7 +247,9 @@ export default function ShowDoMilhao() {
     setMsgAjuda(''); // Limpar msg de ajuda
   }
 
+
   //--------------
+
 
   function usarCarta() {
 
@@ -288,7 +281,7 @@ export default function ShowDoMilhao() {
     const qtdErradas = el.v; // qtd alternativas erradas
 
     if(nomeCarta == 'rei') {
-      alert('Rei. Nenhuma carta para você!');
+      setMsgAjuda('Rei. Nenhuma carta para você!');
       return
     }
 
@@ -301,29 +294,46 @@ export default function ShowDoMilhao() {
 
     corAlternativas(lista);
 
-    // setMsgAjuda();
-    alert(`${nomeCarta}. Carta(s) errada(s): ${lista}`);
+    setMsgAjuda(`${nomeCarta}. ${qtdErradas} cartas`);
   }
 
+
+  //--------------
+
+
+  /**
+   * @param {string[]} lista
+   */
   function corAlternativas(lista) {
     // lista vazia significa para voltar ao estilo padrão das alternativas
     if(lista.length == 0) {
-      perguntaAtual.alternativas.map(alt => {
-        document.getElementById(alt.alt).style.backgroundColor = "white";
-        document.getElementById(alt.alt).style.borderColor = "#00b436";
+      perguntaAtual.alternativas.forEach(alt => {
+        const el = document.getElementById(alt.alt);
+        if(el) {
+          el.style.backgroundColor = "white";
+          el.style.borderColor = "#00b436";
+        }
       });
       return
     }
 
     // Caso lista tenha elementos, mudar estilo destes: para ficar vermelhos e indicar que são as erradas
-    lista.forEach(alt => {
-      document.getElementById(alt).style.backgroundColor = "#f04848";
-      document.getElementById(alt).style.borderColor = "#b80000";
+    lista.forEach((/** @type {string} */ alt) => {
+      const el = document.getElementById(alt);
+      if(el) {
+        el.style.backgroundColor = "#f04848";
+        el.style.borderColor = "#b80000";
+      }
     });
   }
 
+
   //--------------
 
+
+  /**
+   * @param {string} tipo
+   */
   function convidados(tipo) {
     if(!ajuda) {
       alert('Você pode pedir ajuda na próxima rodada.');
@@ -341,24 +351,7 @@ export default function ShowDoMilhao() {
       setPlacas(placas - 1);
     }
 
-    let porcentagem = 100; // valor será tirado daqui e distribuido para as opcoes abaixo
-    let a = 0;
-    let b = 0;
-    let c = 0;
-    let d = 0;
-
-    for(let i = 1; i <= 4; i++) {
-      if(i == 4) d = porcentagem; // pegando a porcentagem restante;
-
-      const porcentagemAleatoria = Math.floor(Math.random() * porcentagem); // Numero aleatorio (min: 0, max: porcentagem restante)
-      porcentagem = porcentagem - porcentagemAleatoria; // subtrai de porcentagem o numero aleatorio obtido acima
-
-      if(i == 1) a = porcentagemAleatoria;
-      if(i == 2) b = porcentagemAleatoria;
-      if(i == 3) c = porcentagemAleatoria;
-    }
-
-    const msg = `${a}% indicam (a), ${b}% indicam (b), ${c}% indicam (c) e ${d}% indicam (d).`;
+    const msg = getMsgAjuda(); // Função que retorna uma mensagem (% de cada alternativa)
 
     if(tipo == 'universitarios') setMsgAjuda(`Universitários: ${msg}`);
     if(tipo == 'placas') setMsgAjuda(`Placas: ${msg}`);
@@ -390,45 +383,37 @@ export default function ShowDoMilhao() {
 
   //--------------
 
+  /**
+   * @param {string} tipo
+   */
   function comprarAjuda(tipo) {
 
     //let certo = false;
     let certo = ComprarAjuda(idUsuario, 3000);
 
-    if(tipo == 'cartas') {
-      //certo = ComprarAjuda(idUsuario, 4000);
-      if(!certo) {
-        alert("Você não tem saldo para esta compra");
-        return
-      }
-      setCartas(cartas + 1);
+    if(!certo) {
+      alert("Você não tem saldo para esta compra");
+      return
+    }
 
+    if(tipo == 'cartas') {
+      setCartas(cartas + 1);
     }
 
     if(tipo == 'universitarios') {
-      //certo = ComprarAjuda(idUsuario, 2000);
-      if(!certo) {
-        alert("Você não tem saldo para esta compra");
-        return
-      }
       setUniversitarios(universitarios + 1);
-
     }
 
     if(tipo == 'placas') {
-      //certo = ComprarAjuda(idUsuario, 2000);
-      if(!certo) {
-        alert("Você não tem saldo para esta compra");
-        return
-      }
       setPlacas(placas + 1);
-
     }
 
     alert('Ajuda descontada na sua conta : )');
-
   }
+
+
   //--------------
+
 
   function parar() { // Encerrar o jogo, resetando os dados do jogo
     alert('Você decidiu parar o jogo');
@@ -446,54 +431,117 @@ export default function ShowDoMilhao() {
     if(!treinar) setIdUsuario('');
   }, [treinar]);
 
+
   //--------------
 
+
+  /**
+   * @param {string} motivo
+   */
   function darPremio(motivo) {
+
+    // Exclusivo para o caso de ganhar o jogo
+    if(motivo == 'milhao') {
+      alert(`Você ganhou o prêmio final`);
+      depositar(1000000 * extra); // depositar na conta usuario
+      salvarPontuacao(1000000 * extra); // atualizar ranking (ou não, função vai definir)
+      encerrar(); // resetar o jogo
+      return
+    }
+
+    const et = infoEtapa.find(e => e.etapa == etapa);
+    if(!et) return
+
+    let premio = 0;
+
     if(motivo == 'errar') {
-      const et = infoEtapa.find(e => e.etapa == etapa);
       if(et.errar == 0) {
-        alert(`Ganhou nada!`);
+        alert(`Ganhou nada.`);
       }
       else {
         alert(`Você ganhou ${et.errar}`);
-        depositar(et.errar);
-        salvarPontuacao(et.errar); // Salvar ranking do usuário
+        premio = et.errar;
       }
     }
 
     if(motivo == 'parar') {
-      const et = infoEtapa.find(e => e.etapa == etapa);
       alert(`Você ganhou ${et.parar}`);
-      depositar(et.parar);
-      salvarPontuacao(et.parar); // Salvar ranking do usuário
+      premio = et.parar;
     }
 
     if(motivo == 'errar-extra') {
       alert(`Você errou a pergunta extra. Perdeu tudo`);
-      // Só isso mesmo :D
     }
 
-    if(motivo == 'milhao') {
-      alert(`Você ganhou o prêmio final`);
-      depositar(1000000);
-      salvarPontuacao(1000000); // Salvar ranking do usuário
+    if(premio != 0) {
+      depositar(premio * extra); // depositar na conta usuario
+      salvarPontuacao(premio * extra); // atualizar ranking (ou não, função vai definir)
+      // multiplicados por extra, que pode ser 1 (normal) ou 2 (dobrado)
     }
 
-    encerrar(); // resetar dados do jogo
+    encerrar(); // resetar o jogo
   }
+
 
   //--------------
 
+
+  /**
+   * @param {number} premio
+   */
   function salvarPontuacao(premio) {
-    const seSuperou = salvarPontuacaoRanking(idUsuario, etapa, (premio * extra));
+    const seSuperou = salvarPontuacaoRanking(idUsuario, etapa, premio);
 
     if(seSuperou) { // Significa que teve alterações na lista de pontuação
       alert("Você superou seu resultado anterior!");
-      setPontuacoes(getRanking); // atualizar o state
+      setPontuacoes(getRanking); // atualizar o ranking
     }
   }
 
+
   //--------------
+
+
+  /**
+   * @param {number} valor
+   */
+  function depositar(valor) {
+    
+    // Salva lista com o saldo do usuario atualizado no LocalStorage e retorna a lista atualizada
+    const novaLista = depositarPremio(listaUsuarios, idUsuario, valor);
+
+    // Salva a lista atualizada
+    setListaUsuarios(novaLista);
+
+    // salvar transação
+    salvarTransacao(valor);
+  
+  }
+
+
+  //--------------
+
+
+  /**
+   * @param {number} valor
+   */
+  function salvarTransacao(valor) {
+
+    const valorFormatado = (valor).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+
+    const transacao = {
+      tipo: 'D',
+      valor: valor, // extra pode ser 1 ou 2
+      data: new Date(),
+      descricao: `Ganhou ${valorFormatado} no jogo do Milhao`
+    };
+    salvarTransacoesLocalStorage(idUsuario, transacao);
+
+  }
+
+
+  //--------------
+
 
   function encerrar() { // Encerrar o jogo, resetando os dados do jogo
     setJogar(false);
@@ -506,37 +554,6 @@ export default function ShowDoMilhao() {
     setNivel('facil');
     setPulos(0);
     setEtapa(1);
-  }
-
-  //--------------
-
-  /**
-   * @param {number} valor
-   */
-  function depositar(valor) { // listaUsuarios, setListaUsuarios
-    
-    const novaLista = [];
-
-    listaUsuarios.forEach(u => {
-      if(u.id == idUsuario) {
-        u.saldo = u.saldo + (valor * extra); // extra pode ser 1 ou 2
-      }
-      novaLista.push(u);
-    });
-
-    setListaUsuarios(novaLista);
-    localStorage.setItem('listaCliente', JSON.stringify(novaLista));
-
-    const valorFormatado = (valor * extra).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-
-    // Salvar transação
-    const transacao = {
-      tipo: 'D',
-      valor: valor * extra, // extra pode ser 1 ou 2
-      data: new Date(),
-      descricao: `Ganhou ${valorFormatado} no jogo do Milhao`
-    };
-    salvarTransacoesLocalStorage(idUsuario, transacao);
   }
 
 
@@ -744,11 +761,48 @@ export default function ShowDoMilhao() {
           />
 
 
-
-
         </div>
 
       </div>
+
+
+
+      
+      <>
+      <h6>Lista Facil</h6>
+      {listaFacil.map(p => {
+        //
+        return (
+          <p>{p.titulo} | {p.nivel}</p>
+        )
+      })}
+      </>
+
+
+
+
+      <>
+      <h6>Lista Média</h6>
+      {listaMedio.map(p => {
+        //
+        return (
+          <p>{p.titulo} | {p.nivel}</p>
+        )
+      })}
+      </>
+
+
+
+
+      <>
+      <h6>Lista Difícil</h6>
+      {listaDificil.map(p => {
+        //
+        return (
+          <p>{p.titulo} | {p.nivel}</p>
+        )
+      })}
+      </>
 
 
       <br />

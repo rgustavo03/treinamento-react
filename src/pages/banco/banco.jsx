@@ -220,13 +220,6 @@ export default function Banco() {
       <div className='bg-body-tertiary'>
         <div className='container'>
 
-          <Header
-            titulo="DC Bank"
-            subtitulo={`${transacoes.length} registros`}
-            icone="fa-solid fa-landmark"
-          />
-
-
           <div className='row'>
 
             <div className='col-lg-4'>
@@ -328,10 +321,12 @@ export default function Banco() {
 
             <ShowTransacoes usuario={usuario} alteracaoTransacoes={transacoes} />
 
-
           </div>
+
         </div>
       </div>
+
+
     </div>
   )
 }

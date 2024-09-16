@@ -1,12 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Menu from "../../componentes/menu";
 import { getPerguntas, salvarPergunta } from "../../service/perguntas";
 
 import Input from "../../componentes/input";
 import Button from '../../componentes/button';
 
+import "../../css/cadastroperguntas.css"
+
 
 export default function CadastroPerguntas() {
+
+  const formatoPergunta = {
+    titulo: '',
+    alternativas: [{alt: '', valor: ''},{alt: '', valor: ''}, {alt: '', valor: ''}, {alt: '', valor: ''}],
+    resposta: '',
+    nivel: ''
+  }
+
+  const [listaPerguntas, setListaPerguntas] = useState(getPerguntas() || [formatoPergunta]);
 
   const [titulo, setTitulo] = useState('');
   const [a, setA] = useState('');
@@ -35,6 +46,8 @@ export default function CadastroPerguntas() {
     };
 
     salvarPergunta(pergunta);
+
+    setListaPerguntas(getPerguntas());
 
   }
 
@@ -96,6 +109,16 @@ export default function CadastroPerguntas() {
               <i className="fa-solid fa-floppy-disk"></i>
             </Button>
         </div>
+      </div>
+
+
+      <div className="lista-perguntas">
+        {listaPerguntas.map(p => {
+          //
+          return (
+            <p>{p.titulo} | {p.nivel}</p>
+          )
+        })}
       </div>
 
     </>
